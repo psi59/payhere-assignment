@@ -7,6 +7,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rs/zerolog/log"
+
+	"github.com/psi59/payhere-assignment/internal/i18n"
+
 	"github.com/psi59/payhere-assignment/usecase/authtoken"
 
 	"github.com/psi59/payhere-assignment/internal/ginhelper"
@@ -45,11 +49,11 @@ func (h *UserHandler) SignUp(c *gin.Context) {
 	ctx := ginhelper.GetContext(c)
 	var req SignUpRequest
 	if err := c.BindJSON(&req); err != nil {
-		_ = c.Error(errors.WithStack(fmt.Errorf("%w: %v", domain.ErrInvalidRequest, err)))
-		c.Abort()
+		_ = c.Error(errors.WithStack(domain.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, err)))
+		return
 	}
 	if err := req.Validate(); err != nil {
-		_ = c.Error(errors.WithStack(fmt.Errorf("%w: %v", domain.ErrInvalidRequest, err)))
+		_ = c.Error(errors.WithStack(domain.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, err)))
 		return
 	}
 	userDomain, err := h.userUsecase.Create(ctx, &user.CreateInput{
@@ -60,7 +64,7 @@ func (h *UserHandler) SignUp(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrDuplicatedUser):
-			_ = c.Error(errors.WithStack(domain.NewHTTPError("DuplicatedUser", err)))
+			_ = c.Error(errors.WithStack(domain.NewHTTPError(http.StatusConflict, i18n.UserAlreadyExists, err)))
 		default:
 			_ = c.Error(errors.WithStack(err))
 		}
@@ -76,18 +80,18 @@ func (h *UserHandler) SignIn(c *gin.Context) {
 	ctx := ginhelper.GetContext(c)
 	var req SignInRequest
 	if err := c.BindJSON(&req); err != nil {
-		_ = c.Error(errors.WithStack(fmt.Errorf("%w: %v", domain.ErrInvalidRequest, err)))
+		_ = c.Error(errors.WithStack(domain.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, err)))
 		return
 	}
 	if err := valid.ValidateStruct(req); err != nil {
-		_ = c.Error(errors.WithStack(fmt.Errorf("%w: %v", domain.ErrInvalidRequest, err)))
+		_ = c.Error(errors.WithStack(domain.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, err)))
 		return
 	}
 
 	userDomain, err := h.userUsecase.GetByPhoneNumber(ctx, &user.GetByPhoneNumberInput{PhoneNumber: req.PhoneNumber})
 	if err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) {
-			_ = c.Error(errors.WithStack(domain.NewHTTPError("UserNotFound", err)))
+			_ = c.Error(errors.WithStack(domain.NewHTTPError(http.StatusNotFound, i18n.UserNotFound, err)))
 			return
 		}
 
@@ -95,13 +99,11 @@ func (h *UserHandler) SignIn(c *gin.Context) {
 		return
 	}
 	if err := userDomain.ComparePassword(req.Password); err != nil {
-		_ = c.Error(errors.WithStack(domain.NewHTTPError("PasswordMismatch", err)))
+		_ = c.Error(errors.WithStack(domain.NewHTTPError(http.StatusBadRequest, i18n.PasswordMismatch, err)))
 		return
 	}
 
-	createTokenOutput, err := h.authTokenUsecase.Create(ctx, &authtoken.CreateInput{
-		Identifier: strconv.Itoa(userDomain.ID),
-	})
+	createTokenOutput, err := h.authTokenUsecase.Create(ctx, &authtoken.CreateInput{Identifier: strconv.Itoa(userDomain.ID)})
 	if err != nil {
 		_ = c.Error(errors.WithStack(err))
 		return
@@ -124,8 +126,13 @@ func (h *UserHandler) SignOut(c *gin.Context) {
 	token := strings.TrimPrefix(c.GetHeader("Authorization"), "Bearer ")
 	if len(token) > 0 {
 		if err := h.authTokenUsecase.RegisterToBlacklist(ctx, &authtoken.RegisterToBlacklistInput{Token: token}); err != nil {
-			_ = c.Error(err)
-			return
+			// 토큰 블랙리스트 중복 등록일 경우 200 반환
+			if !errors.Is(err, domain.ErrDuplicatedTokenBlacklist) {
+				_ = c.Error(err)
+				return
+			}
+
+			log.Warn().Err(err).Send()
 		}
 	}
 

@@ -3,18 +3,21 @@ module github.com/psi59/payhere-assignment
 go 1.21.6
 
 require (
+	github.com/BurntSushi/toml v1.3.2
 	github.com/brianvoe/gofakeit/v6 v6.26.4
 	github.com/gin-contrib/requestid v0.0.6
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-playground/validator/v10 v10.16.0
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/golang-jwt/jwt/v5 v5.2.0
+	github.com/nicksnyder/go-i18n/v2 v2.3.0
 	github.com/pkg/errors v0.9.1
 	github.com/rs/xid v1.5.0
 	github.com/rs/zerolog v1.31.0
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.18.0
+	golang.org/x/text v0.14.0
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.5.2
 	gorm.io/gorm v1.25.5
@@ -49,6 +52,5 @@ require (
 	golang.org/x/arch v0.7.0 // indirect
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/sys v0.16.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/protobuf v1.32.0 // indirect
 )

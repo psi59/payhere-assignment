@@ -76,10 +76,10 @@ func ErrorMiddleware() gin.HandlerFunc {
 
 		logLevel = zerolog.WarnLevel
 		c.JSON(
-			httpError.StatusCode(),
+			httpError.StatusCode,
 			domain.Response{
 				Meta: domain.ResponseMeta{
-					Code:    httpError.StatusCode(),
+					Code:    httpError.StatusCode,
 					Message: httpError.Message(),
 				},
 			},

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/go-sql-driver/mysql"
+
 	"gorm.io/gorm"
 
 	"github.com/psi59/payhere-assignment/internal/db"
@@ -41,8 +43,9 @@ func (r *UserRepository) Create(c context.Context, user *domain.User) error {
 		CreatedAt:   user.CreatedAt,
 	}
 	if err := conn.Create(userModel).Error; err != nil {
-		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return fmt.Errorf("%w: %v", domain.ErrDuplicatedUser, err)
+		var mysqlErr *mysql.MySQLError
+		if errors.As(err, &mysqlErr); mysqlErr.Number == DuplicateEntry {
+			return errors.Wrap(domain.ErrDuplicatedUser, err.Error())
 		}
 
 		return errors.WithStack(err)

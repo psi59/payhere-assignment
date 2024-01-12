@@ -37,8 +37,8 @@ func (r *TokenBlacklistRepository) Create(c context.Context, token *domain.AuthT
 	}
 	if err := conn.Create(&AuthToken{Token: token.Token, ExpiresAt: token.ExpiresAt}).Error; err != nil {
 		var mysqlErr *mysql.MySQLError
-		if errors.As(err, &mysqlErr); mysqlErr.Number == 1062 {
-			return nil
+		if errors.As(err, &mysqlErr); mysqlErr.Number == DuplicateEntry {
+			return errors.Wrap(domain.ErrDuplicatedTokenBlacklist, err.Error())
 		}
 
 		return errors.WithStack(err)

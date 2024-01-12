@@ -55,10 +55,10 @@ func (u *User) Validate() error {
 		return fmt.Errorf("zero UserID")
 	}
 	if _, err := bcrypt.Cost([]byte(u.Password)); err != nil {
-		return fmt.Errorf("%w: %v", ErrInvalidUser, err)
+		return errors.Wrap(ErrInvalidUser, err.Error())
 	}
 	if err := valid.ValidatePhoneNumber(u.PhoneNumber); err != nil {
-		return fmt.Errorf("%w: %v", ErrInvalidUser, err)
+		return errors.Wrap(ErrInvalidUser, err.Error())
 	}
 	if u.CreatedAt.IsZero() {
 		return fmt.Errorf("%w: zero time", ErrInvalidUser)
@@ -68,5 +68,9 @@ func (u *User) Validate() error {
 }
 
 func (u *User) ComparePassword(password string) error {
-	return errors.WithStack(bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)))
+	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
+		return errors.Wrap(ErrPasswordMismatch, err.Error())
+	}
+
+	return nil
 }
