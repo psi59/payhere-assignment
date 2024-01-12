@@ -5,14 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-sql-driver/mysql"
-
-	"gorm.io/gorm"
-
 	"github.com/pkg/errors"
 	"github.com/psi59/payhere-assignment/domain"
 	"github.com/psi59/payhere-assignment/internal/db"
 	"github.com/psi59/payhere-assignment/internal/valid"
+	"gorm.io/gorm"
 )
 
 type TokenBlacklistRepository struct{}
@@ -36,8 +33,7 @@ func (r *TokenBlacklistRepository) Create(c context.Context, token *domain.AuthT
 		return errors.WithStack(err)
 	}
 	if err := conn.Create(&AuthToken{Token: token.Token, ExpiresAt: token.ExpiresAt}).Error; err != nil {
-		var mysqlErr *mysql.MySQLError
-		if errors.As(err, &mysqlErr); mysqlErr.Number == DuplicateEntry {
+		if IsDuplicateEntry(err) {
 			return errors.Wrap(domain.ErrDuplicatedTokenBlacklist, err.Error())
 		}
 
@@ -60,9 +56,9 @@ func (r *TokenBlacklistRepository) IsExists(c context.Context, token string) (bo
 	}
 
 	var record struct {
-		Exists bool `gorm:"exists"`
+		Exist bool `gorm:"exist"`
 	}
-	if err := conn.Model(&AuthToken{}).Select("1 AS exists").Where("token = ?", token).Take(&record).Error; err != nil {
+	if err := conn.Model(&AuthToken{}).Select("1 AS exist").Where("token = ?", token).Take(&record).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return false, nil
 		}
@@ -70,7 +66,7 @@ func (r *TokenBlacklistRepository) IsExists(c context.Context, token string) (bo
 		return false, errors.WithStack(err)
 	}
 
-	return record.Exists, nil
+	return record.Exist, nil
 }
 
 type AuthToken struct {

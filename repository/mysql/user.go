@@ -5,16 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-sql-driver/mysql"
-
-	"gorm.io/gorm"
-
-	"github.com/psi59/payhere-assignment/internal/db"
-
 	"github.com/pkg/errors"
-	"github.com/psi59/payhere-assignment/internal/valid"
-
 	"github.com/psi59/payhere-assignment/domain"
+	"github.com/psi59/payhere-assignment/internal/db"
+	"github.com/psi59/payhere-assignment/internal/valid"
+	"gorm.io/gorm"
 )
 
 type UserRepository struct{}
@@ -43,8 +38,7 @@ func (r *UserRepository) Create(c context.Context, user *domain.User) error {
 		CreatedAt:   user.CreatedAt,
 	}
 	if err := conn.Create(userModel).Error; err != nil {
-		var mysqlErr *mysql.MySQLError
-		if errors.As(err, &mysqlErr); mysqlErr.Number == DuplicateEntry {
+		if IsDuplicateEntry(err) {
 			return errors.Wrap(domain.ErrDuplicatedUser, err.Error())
 		}
 
