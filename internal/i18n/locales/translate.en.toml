@@ -1,0 +1,21 @@
+# UNAUTHORIZED
+"Unauthorized" = "Server failed to authenticate the request."
+"ExpiredToken" = "Token is expired."
+
+# BAD REQUEST
+"InvalidRequest" = "The request is not valid."
+"PasswordMismatch" = "Password does not match."
+
+# FORBIDDEN
+"ItemAccessDenied" = "The specified item access denied."
+
+# NOT FOUND
+"NotFound" = "Not Found"
+"UserNotFound" = "The specified user doesn't exist."
+"ItemNotFound" = "The specified item doesn't exist."
+
+# CONFLICT
+"UserAlreadyExists" = "The specified user already exists."
+
+# INTERNAL SERVER ERROR
+"InternalError" = "The server encountered an internal error. Please retry the request."
