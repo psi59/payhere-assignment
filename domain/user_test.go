@@ -47,7 +47,7 @@ func TestNewUser(t *testing.T) {
 		{
 			name: "invalid phoneNumber",
 			args: args{
-				phoneNumber: gofakeit.Phone(),
+				phoneNumber: gofakeit.LetterN(10),
 				name:        "",
 				password:    gofakeit.Password(true, true, true, true, true, 10),
 				createdAt:   now,
@@ -77,7 +77,7 @@ func TestNewUser(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewUser(tt.args.phoneNumber, tt.args.name, tt.args.password, tt.args.createdAt)
+			got, err := NewUser(tt.args.name, tt.args.phoneNumber, tt.args.password, tt.args.createdAt)
 			if tt.wantErr {
 				require.Error(t, err)
 				return

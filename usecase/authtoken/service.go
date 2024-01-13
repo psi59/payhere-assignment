@@ -55,15 +55,13 @@ func (s *Service) Create(c context.Context, input *CreateInput) (*CreateOutput, 
 		ExpiresAt: jwt.NewNumericDate(expiresAt),
 	}
 
-	t := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	token, err := t.SignedString(s.secret)
+	token, err := s.createJWT(claims, s.secret)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
-	encoded := base64.StdEncoding.EncodeToString([]byte(token))
 
 	return &CreateOutput{
-		Token:     encoded,
+		Token:     token,
 		ExpiresAt: expiresAt,
 	}, nil
 }
@@ -134,4 +132,15 @@ func (s *Service) RegisterToBlacklist(c context.Context, input *RegisterToBlackl
 	}
 
 	return nil
+}
+
+func (s *Service) createJWT(claims jwt.Claims, secret []byte) (string, error) {
+	t := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token, err := t.SignedString(secret)
+	if err != nil {
+		return "", errors.WithStack(err)
+	}
+	encoded := base64.StdEncoding.EncodeToString([]byte(token))
+
+	return encoded, nil
 }
