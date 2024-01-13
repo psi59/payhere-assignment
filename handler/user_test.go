@@ -97,8 +97,8 @@ func TestUserHandler_SignUp(t *testing.T) {
 
 	r := gin.New()
 	handler, err := NewUserHandler(userUsecase, authTokenUsecase)
-	r.POST("/", handler.SignUp)
 	require.NoError(t, err)
+	r.POST("/", handler.SignUp)
 
 	t.Run("OK", func(t *testing.T) {
 		signUpRequest := SignUpRequest{
@@ -237,8 +237,8 @@ func TestUserHandler_SignIn(t *testing.T) {
 
 	r := gin.New()
 	handler, err := NewUserHandler(userUsecase, authTokenUsecase)
-	r.POST("/", handler.SignIn)
 	require.NoError(t, err)
+	r.POST("/", handler.SignIn)
 
 	t.Run("OK", func(t *testing.T) {
 		signInRequest := SignInRequest{
@@ -430,8 +430,8 @@ func TestUserHandler_SignOut(t *testing.T) {
 
 	r := gin.New()
 	handler, err := NewUserHandler(userUsecase, authTokenUsecase)
-	r.POST("/", handler.SignOut)
 	require.NoError(t, err)
+	r.POST("/", handler.SignOut)
 
 	t.Run("OK", func(t *testing.T) {
 		token := gofakeit.UUID()

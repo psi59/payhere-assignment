@@ -63,7 +63,7 @@ type APIServer struct {
 	config APIServerConfig
 
 	// Middleware
-	Authenticator *middleware.Authenticator
+	AuthMiddleware *middleware.AuthMiddleware
 
 	// Handlers
 	UserHandler *handler.UserHandler
@@ -168,18 +168,18 @@ func (s *APIServer) initRoutes() {
 		v1User := v1.Group("/users")
 		v1User.POST("/signUp", s.UserHandler.SignUp)
 		v1User.POST("/signIn", s.UserHandler.SignIn)
-		v1User.POST("/signOut", s.Authenticator.Auth(), s.UserHandler.SignOut)
+		v1User.POST("/signOut", s.AuthMiddleware.Auth(), s.UserHandler.SignOut)
 	}
 
 }
 
 func (s *APIServer) initMiddleware() error {
-	authenticator, err := middleware.NewAuthenticator(s.UserUsecase, s.AuthTokenUsecase)
+	authMiddleware, err := middleware.NewAuthMiddleware(s.UserUsecase, s.AuthTokenUsecase)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	s.Authenticator = authenticator
+	s.AuthMiddleware = authMiddleware
 
 	return nil
 }

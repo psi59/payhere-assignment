@@ -17,12 +17,12 @@ import (
 	"github.com/psi59/payhere-assignment/usecase/user"
 )
 
-type Authenticator struct {
+type AuthMiddleware struct {
 	userUsecase      user.Usecase
 	authTokenUsecase authtoken.Usecase
 }
 
-func NewAuthenticator(userUsecase user.Usecase, authTokenUsecase authtoken.Usecase) (*Authenticator, error) {
+func NewAuthMiddleware(userUsecase user.Usecase, authTokenUsecase authtoken.Usecase) (*AuthMiddleware, error) {
 	switch {
 	case valid.IsNil(userUsecase):
 		return nil, user.ErrNilUsecase
@@ -30,13 +30,13 @@ func NewAuthenticator(userUsecase user.Usecase, authTokenUsecase authtoken.Useca
 		return nil, authtoken.ErrNilUsecase
 	}
 
-	return &Authenticator{
+	return &AuthMiddleware{
 		userUsecase:      userUsecase,
 		authTokenUsecase: authTokenUsecase,
 	}, nil
 }
 
-func (a *Authenticator) Auth() gin.HandlerFunc {
+func (a *AuthMiddleware) Auth() gin.HandlerFunc {
 	return func(ginCtx *gin.Context) {
 		ctx := ginhelper.GetContext(ginCtx)
 		token := ginhelper.GetToken(ginCtx)
