@@ -40,11 +40,11 @@ func (h *UserHandler) SignUp(ginCtx *gin.Context) {
 	ctx := ginhelper.GetContext(ginCtx)
 	var req SignUpRequest
 	if err := ginCtx.BindJSON(&req); err != nil {
-		_ = ginCtx.Error(errors.WithStack(domain.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, err)))
+		ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, errors.WithStack(err)))
 		return
 	}
 	if err := req.Validate(); err != nil {
-		_ = ginCtx.Error(errors.WithStack(domain.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, err)))
+		ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, errors.WithStack(err)))
 		return
 	}
 	userCreateOutput, err := h.userUsecase.Create(ctx, &user.CreateInput{
@@ -55,9 +55,9 @@ func (h *UserHandler) SignUp(ginCtx *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrDuplicatedUser):
-			_ = ginCtx.Error(errors.WithStack(domain.NewHTTPError(http.StatusConflict, i18n.UserAlreadyExists, err)))
+			ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusConflict, i18n.UserAlreadyExists, errors.WithStack(err)))
 		default:
-			_ = ginCtx.Error(errors.WithStack(err))
+			ginhelper.Error(ginCtx, errors.WithStack(err))
 		}
 
 		return
@@ -71,45 +71,39 @@ func (h *UserHandler) SignIn(ginCtx *gin.Context) {
 	ctx := ginhelper.GetContext(ginCtx)
 	var req SignInRequest
 	if err := ginCtx.BindJSON(&req); err != nil {
-		_ = ginCtx.Error(errors.WithStack(domain.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, err)))
+		ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, errors.WithStack(err)))
 		return
 	}
 	if err := valid.ValidateStruct(req); err != nil {
-		_ = ginCtx.Error(errors.WithStack(domain.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, err)))
+		ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, errors.WithStack(err)))
 		return
 	}
 
 	userGetOutput, err := h.userUsecase.GetByPhoneNumber(ctx, &user.GetByPhoneNumberInput{PhoneNumber: req.PhoneNumber})
 	if err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) {
-			_ = ginCtx.Error(errors.WithStack(domain.NewHTTPError(http.StatusNotFound, i18n.UserNotFound, err)))
+			ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusNotFound, i18n.UserNotFound, errors.WithStack(err)))
 			return
 		}
 
-		_ = ginCtx.Error(errors.WithStack(err))
+		ginhelper.Error(ginCtx, errors.WithStack(err))
 		return
 	}
 	userDomain := userGetOutput.User
 	if err := userDomain.ComparePassword(req.Password); err != nil {
-		_ = ginCtx.Error(errors.WithStack(domain.NewHTTPError(http.StatusBadRequest, i18n.PasswordMismatch, err)))
+		ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusBadRequest, i18n.PasswordMismatch, errors.WithStack(err)))
 		return
 	}
 
 	createTokenOutput, err := h.authTokenUsecase.Create(ctx, &authtoken.CreateInput{Identifier: strconv.Itoa(userDomain.ID)})
 	if err != nil {
-		_ = ginCtx.Error(errors.WithStack(err))
+		ginhelper.Error(ginCtx, errors.WithStack(err))
 		return
 	}
 
-	ginCtx.JSON(http.StatusOK, domain.Response{
-		Meta: domain.ResponseMeta{
-			Code:    200,
-			Message: "ok",
-		},
-		Data: SignInResponse{
-			Token:     createTokenOutput.Token,
-			ExpiresAt: createTokenOutput.ExpiresAt,
-		},
+	ginhelper.Success(ginCtx, SignInResponse{
+		Token:     createTokenOutput.Token,
+		ExpiresAt: createTokenOutput.ExpiresAt,
 	})
 }
 
@@ -119,20 +113,15 @@ func (h *UserHandler) SignOut(ginCtx *gin.Context) {
 
 	if err := h.authTokenUsecase.RegisterBlacklist(ctx, &authtoken.RegisterBlacklistInput{Token: token}); err != nil {
 		if errors.Is(err, domain.ErrDuplicatedTokenBlacklist) {
-			_ = ginCtx.Error(errors.WithStack(domain.NewHTTPError(http.StatusUnauthorized, i18n.TokenBlacklistAlreadyExists, err)))
+			ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusUnauthorized, i18n.TokenBlacklistAlreadyExists, errors.WithStack(err)))
 			return
 		}
 
-		_ = ginCtx.Error(errors.WithStack(err))
+		ginhelper.Error(ginCtx, errors.WithStack(err))
 		return
 	}
 
-	ginCtx.JSON(http.StatusOK, domain.Response{
-		Meta: domain.ResponseMeta{
-			Code:    http.StatusOK,
-			Message: "ok",
-		},
-	})
+	ginhelper.Success(ginCtx, nil)
 	return
 }
 

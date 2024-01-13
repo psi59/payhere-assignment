@@ -79,6 +79,45 @@ func (c_2 *MockAuthTokenUsecaseCreateCall) DoAndReturn(f func(context.Context, *
 	return c_2
 }
 
+// GetBlacklist mocks base method.
+func (m *MockAuthTokenUsecase) GetBlacklist(c context.Context, input *authtoken.GetBlacklistInput) (*authtoken.GetBlacklistOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBlacklist", c, input)
+	ret0, _ := ret[0].(*authtoken.GetBlacklistOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBlacklist indicates an expected call of GetBlacklist.
+func (mr *MockAuthTokenUsecaseMockRecorder) GetBlacklist(c, input any) *MockAuthTokenUsecaseGetBlacklistCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlacklist", reflect.TypeOf((*MockAuthTokenUsecase)(nil).GetBlacklist), c, input)
+	return &MockAuthTokenUsecaseGetBlacklistCall{Call: call}
+}
+
+// MockAuthTokenUsecaseGetBlacklistCall wrap *gomock.Call
+type MockAuthTokenUsecaseGetBlacklistCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c_2 *MockAuthTokenUsecaseGetBlacklistCall) Return(arg0 *authtoken.GetBlacklistOutput, arg1 error) *MockAuthTokenUsecaseGetBlacklistCall {
+	c_2.Call = c_2.Call.Return(arg0, arg1)
+	return c_2
+}
+
+// Do rewrite *gomock.Call.Do
+func (c_2 *MockAuthTokenUsecaseGetBlacklistCall) Do(f func(context.Context, *authtoken.GetBlacklistInput) (*authtoken.GetBlacklistOutput, error)) *MockAuthTokenUsecaseGetBlacklistCall {
+	c_2.Call = c_2.Call.Do(f)
+	return c_2
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c_2 *MockAuthTokenUsecaseGetBlacklistCall) DoAndReturn(f func(context.Context, *authtoken.GetBlacklistInput) (*authtoken.GetBlacklistOutput, error)) *MockAuthTokenUsecaseGetBlacklistCall {
+	c_2.Call = c_2.Call.DoAndReturn(f)
+	return c_2
+}
+
 // RegisterBlacklist mocks base method.
 func (m *MockAuthTokenUsecase) RegisterBlacklist(c context.Context, input *authtoken.RegisterBlacklistInput) error {
 	m.ctrl.T.Helper()

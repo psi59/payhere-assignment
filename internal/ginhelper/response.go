@@ -1,4 +1,4 @@
-package domain
+package ginhelper
 
 type Response struct {
 	Meta ResponseMeta `json:"meta"`

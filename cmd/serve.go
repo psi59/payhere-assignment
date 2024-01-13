@@ -86,7 +86,7 @@ func NewAPIServer(configPath string) (*APIServer, error) {
 		return nil, errors.Wrap(err, "failed to load config")
 	}
 
-	engine := gin.Default()
+	engine := gin.New()
 	s := &APIServer{
 		engine: engine,
 		config: config,
@@ -155,13 +155,13 @@ func (s *APIServer) initRoutes() {
 	v1.Use(
 		requestid.New(),
 		middleware.SetContext(),
+		middleware.Logger(),
 		func(c *gin.Context) {
 			ctx := ginhelper.GetContext(c)
 			ctx = db.ContextWithConn(ctx, s.dbConn)
 			ginhelper.SetContext(c, ctx)
 			c.Next()
 		},
-		middleware.ErrorMiddleware(),
 	)
 
 	{

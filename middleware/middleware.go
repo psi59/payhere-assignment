@@ -3,13 +3,11 @@ package middleware
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/gin-contrib/requestid"
 	"github.com/gin-gonic/gin"
 	"github.com/psi59/gopkg/ctxlog"
-	"github.com/psi59/payhere-assignment/domain"
 	"github.com/psi59/payhere-assignment/internal/ginhelper"
 	"github.com/psi59/payhere-assignment/internal/valid"
 	"github.com/rs/zerolog"
@@ -22,7 +20,7 @@ func SetContext() gin.HandlerFunc {
 	}
 }
 
-func ErrorMiddleware() gin.HandlerFunc {
+func Logger() gin.HandlerFunc {
 	return func(ginCtx *gin.Context) {
 		ctx := ginhelper.GetContext(ginCtx)
 		req := ginCtx.Request
@@ -62,28 +60,13 @@ func ErrorMiddleware() gin.HandlerFunc {
 		}
 
 		handlerErr = ginCtx.Errors.Last().Err
-		var httpError *domain.HTTPError
+		var httpError *ginhelper.HTTPError
 		if !errors.As(handlerErr, &httpError) {
 			logLevel = zerolog.ErrorLevel
-			ginCtx.JSON(http.StatusInternalServerError, domain.Response{
-				Meta: domain.ResponseMeta{
-					Code:    http.StatusInternalServerError,
-					Message: "",
-				},
-			})
 			return
 		}
 
 		logLevel = zerolog.WarnLevel
-		ginCtx.JSON(
-			httpError.StatusCode,
-			domain.Response{
-				Meta: domain.ResponseMeta{
-					Code:    httpError.StatusCode,
-					Message: httpError.Message(),
-				},
-			},
-		)
 	}
 }
 

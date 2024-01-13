@@ -41,7 +41,7 @@ func (a *Authenticator) Auth() gin.HandlerFunc {
 		ctx := ginhelper.GetContext(ginCtx)
 		token := ginhelper.GetToken(ginCtx)
 		if len(token) == 0 {
-			_ = ginCtx.Error(errors.WithStack(domain.NewHTTPError(http.StatusUnauthorized, i18n.Unauthorized, fmt.Errorf("empty token"))))
+			ginhelper.Error(ginCtx, errors.WithStack(ginhelper.NewHTTPError(http.StatusUnauthorized, i18n.Unauthorized, fmt.Errorf("empty token"))))
 			ginCtx.Abort()
 			return
 		}
@@ -55,14 +55,14 @@ func (a *Authenticator) Auth() gin.HandlerFunc {
 				msgID = i18n.ExpiredToken
 			}
 
-			_ = ginCtx.Error(errors.WithStack(domain.NewHTTPError(http.StatusUnauthorized, msgID, err)))
+			ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusUnauthorized, msgID, errors.WithStack(err)))
 			ginCtx.Abort()
 			return
 		}
 
 		userID, err := strconv.Atoi(verifyTokenOutput.Identifier)
 		if err != nil {
-			_ = ginCtx.Error(errors.Wrap(err, "failed to parse userID"))
+			ginhelper.Error(ginCtx, errors.Wrap(err, "failed to parse userID"))
 			ginCtx.Abort()
 			return
 		}
@@ -72,12 +72,12 @@ func (a *Authenticator) Auth() gin.HandlerFunc {
 		})
 		if err != nil {
 			if errors.Is(err, domain.ErrUserNotFound) {
-				_ = ginCtx.Error(errors.WithStack(domain.NewHTTPError(http.StatusUnauthorized, i18n.UserNotFound, err)))
+				ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusUnauthorized, i18n.UserNotFound, errors.WithStack(err)))
 				ginCtx.Abort()
 				return
 			}
 
-			_ = ginCtx.Error(errors.Wrap(err, "failed to get user"))
+			ginhelper.Error(ginCtx, errors.Wrap(err, "failed to get user"))
 			ginCtx.Abort()
 			return
 		}
