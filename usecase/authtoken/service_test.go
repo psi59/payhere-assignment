@@ -206,7 +206,7 @@ func TestService_Verify(t *testing.T) {
 	})
 }
 
-func TestService_RegisterToBlacklist(t *testing.T) {
+func TestService_RegisterBlacklist(t *testing.T) {
 	ctx := context.TODO()
 	secret := gofakeit.LetterN(100)
 	id := gofakeit.UUID()
@@ -224,7 +224,7 @@ func TestService_RegisterToBlacklist(t *testing.T) {
 		require.NotEmpty(t, createOutput)
 
 		tokenBlacklistRepo.EXPECT().Create(ctx, gomock.Any()).Return(nil)
-		err = srv.RegisterToBlacklist(ctx, &RegisterToBlacklistInput{Token: createOutput.Token})
+		err = srv.RegisterBlacklist(ctx, &RegisterBlacklistInput{Token: createOutput.Token})
 		require.NoError(t, err)
 	})
 
@@ -236,7 +236,7 @@ func TestService_RegisterToBlacklist(t *testing.T) {
 		srv, err := NewService(secret, tokenBlacklistRepo)
 		require.NoError(t, err)
 
-		err = srv.RegisterToBlacklist(nil, &RegisterToBlacklistInput{Token: gofakeit.UUID()})
+		err = srv.RegisterBlacklist(nil, &RegisterBlacklistInput{Token: gofakeit.UUID()})
 		require.ErrorIs(t, err, domain.ErrNilContext)
 	})
 
@@ -248,7 +248,7 @@ func TestService_RegisterToBlacklist(t *testing.T) {
 		srv, err := NewService(secret, tokenBlacklistRepo)
 		require.NoError(t, err)
 
-		err = srv.RegisterToBlacklist(ctx, nil)
+		err = srv.RegisterBlacklist(ctx, nil)
 		require.Error(t, err)
 	})
 
@@ -260,7 +260,7 @@ func TestService_RegisterToBlacklist(t *testing.T) {
 		srv, err := NewService(secret, tokenBlacklistRepo)
 		require.NoError(t, err)
 
-		err = srv.RegisterToBlacklist(ctx, &RegisterToBlacklistInput{Token: ""})
+		err = srv.RegisterBlacklist(ctx, &RegisterBlacklistInput{Token: ""})
 		require.Error(t, err)
 	})
 
@@ -282,7 +282,7 @@ func TestService_RegisterToBlacklist(t *testing.T) {
 		}
 		token, err := srv.createJWT(claims, srv.secret)
 		require.NoError(t, err)
-		err = srv.RegisterToBlacklist(ctx, &RegisterToBlacklistInput{Token: token})
+		err = srv.RegisterBlacklist(ctx, &RegisterBlacklistInput{Token: token})
 		require.NoError(t, err)
 	})
 
@@ -294,7 +294,7 @@ func TestService_RegisterToBlacklist(t *testing.T) {
 		srv, err := NewService(secret, tokenBlacklistRepo)
 		require.NoError(t, err)
 
-		err = srv.RegisterToBlacklist(ctx, &RegisterToBlacklistInput{Token: gofakeit.UUID()})
+		err = srv.RegisterBlacklist(ctx, &RegisterBlacklistInput{Token: gofakeit.UUID()})
 		require.Error(t, err)
 	})
 
@@ -311,7 +311,70 @@ func TestService_RegisterToBlacklist(t *testing.T) {
 		require.NotEmpty(t, createOutput)
 
 		tokenBlacklistRepo.EXPECT().Create(ctx, gomock.Any()).Return(gofakeit.Error())
-		err = srv.RegisterToBlacklist(ctx, &RegisterToBlacklistInput{Token: createOutput.Token})
+		err = srv.RegisterBlacklist(ctx, &RegisterBlacklistInput{Token: createOutput.Token})
 		require.Error(t, err)
+	})
+}
+
+func TestService_GetBlacklist(t *testing.T) {
+	ctx := context.TODO()
+	secret := gofakeit.LetterN(100)
+	token := &domain.AuthToken{
+		Token:     gofakeit.UUID(),
+		ExpiresAt: gofakeit.FutureDate(),
+	}
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	tokenBlacklistRepo := repomocks.NewMockTokenBlacklistRepository(ctrl)
+	srv, err := NewService(secret, tokenBlacklistRepo)
+	require.NoError(t, err)
+
+	t.Run("OK", func(t *testing.T) {
+		tokenBlacklistRepo.EXPECT().Get(ctx, token.Token).DoAndReturn(func(ctx context.Context, s string) (*domain.AuthToken, error) {
+			return token, nil
+		})
+
+		got, err := srv.GetBlacklist(ctx, &GetBlacklistInput{
+			Token: token.Token,
+		})
+		require.NoError(t, err)
+		require.NotNil(t, got)
+		require.Equal(t, token, got.Token)
+	})
+
+	t.Run("token not found", func(t *testing.T) {
+		tokenBlacklistRepo.EXPECT().Get(ctx, token.Token).DoAndReturn(func(ctx context.Context, s string) (*domain.AuthToken, error) {
+			return nil, domain.ErrTokenBlacklistNotFound
+		})
+
+		got, err := srv.GetBlacklist(ctx, &GetBlacklistInput{
+			Token: token.Token,
+		})
+		require.Error(t, err)
+		require.Nil(t, got)
+	})
+
+	t.Run("token not found", func(t *testing.T) {
+		got, err := srv.GetBlacklist(nil, &GetBlacklistInput{
+			Token: token.Token,
+		})
+		require.Error(t, err)
+		require.Nil(t, got)
+	})
+
+	t.Run("nil input", func(t *testing.T) {
+		got, err := srv.GetBlacklist(ctx, nil)
+		require.Error(t, err)
+		require.Nil(t, got)
+	})
+
+	t.Run("invalid input", func(t *testing.T) {
+		got, err := srv.GetBlacklist(ctx, &GetBlacklistInput{
+			Token: "",
+		})
+		require.Error(t, err)
+		require.Nil(t, got)
 	})
 }

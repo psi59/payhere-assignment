@@ -1,4 +1,4 @@
-package middlware
+package middleware
 
 import (
 	"errors"
@@ -8,39 +8,39 @@ import (
 
 	"github.com/gin-contrib/requestid"
 	"github.com/gin-gonic/gin"
+	"github.com/psi59/gopkg/ctxlog"
 	"github.com/psi59/payhere-assignment/domain"
-	"github.com/psi59/payhere-assignment/internal/ctxlog"
 	"github.com/psi59/payhere-assignment/internal/ginhelper"
 	"github.com/psi59/payhere-assignment/internal/valid"
 	"github.com/rs/zerolog"
 )
 
 func SetContext() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ginhelper.SetContext(c, c)
-		c.Next()
+	return func(ginCtx *gin.Context) {
+		ginhelper.SetContext(ginCtx, ginCtx)
+		ginCtx.Next()
 	}
 }
 
 func ErrorMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		ctx := ginhelper.GetContext(c)
-		req := c.Request
+	return func(ginCtx *gin.Context) {
+		ctx := ginhelper.GetContext(ginCtx)
+		req := ginCtx.Request
 		ctx = ctxlog.WithLogger(ctx)
-		ginhelper.SetContext(c, ctx)
+		ginhelper.SetContext(ginCtx, ctx)
 		t := time.Now()
 
 		var lf logFields
 		var logLevel zerolog.Level
 		var handlerErr error
-		lf.RequestID = requestid.Get(c)
-		lf.IP = c.ClientIP()
+		lf.RequestID = requestid.Get(ginCtx)
+		lf.IP = ginCtx.ClientIP()
 		lf.Method = req.Method
 		lf.URI = req.RequestURI
 		lf.ContentLength = req.ContentLength
 		lf.RequestTime = t
 		defer func(lvl *zerolog.Level, lf *logFields) {
-			res := c.Writer
+			res := ginCtx.Writer
 			lf.ResponseSize = res.Size()
 			lf.StatusCode = res.Status()
 			lf.Duration = time.Since(t).String()
@@ -55,17 +55,17 @@ func ErrorMiddleware() gin.HandlerFunc {
 			logger.Send()
 		}(&logLevel, &lf)
 
-		c.Next()
-		if len(c.Errors) == 0 {
+		ginCtx.Next()
+		if len(ginCtx.Errors) == 0 {
 			logLevel = zerolog.InfoLevel
 			return
 		}
 
-		handlerErr = c.Errors.Last().Err
+		handlerErr = ginCtx.Errors.Last().Err
 		var httpError *domain.HTTPError
 		if !errors.As(handlerErr, &httpError) {
 			logLevel = zerolog.ErrorLevel
-			c.JSON(http.StatusInternalServerError, domain.Response{
+			ginCtx.JSON(http.StatusInternalServerError, domain.Response{
 				Meta: domain.ResponseMeta{
 					Code:    http.StatusInternalServerError,
 					Message: "",
@@ -75,7 +75,7 @@ func ErrorMiddleware() gin.HandlerFunc {
 		}
 
 		logLevel = zerolog.WarnLevel
-		c.JSON(
+		ginCtx.JSON(
 			httpError.StatusCode,
 			domain.Response{
 				Meta: domain.ResponseMeta{

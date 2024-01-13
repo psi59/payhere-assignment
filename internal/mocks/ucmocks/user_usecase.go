@@ -13,7 +13,6 @@ import (
 	context "context"
 	reflect "reflect"
 
-	domain "github.com/psi59/payhere-assignment/domain"
 	user "github.com/psi59/payhere-assignment/usecase/user"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -42,10 +41,10 @@ func (m *MockUserUsecase) EXPECT() *MockUserUsecaseMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockUserUsecase) Create(c context.Context, input *user.CreateInput) (*domain.User, error) {
+func (m *MockUserUsecase) Create(c context.Context, input *user.CreateInput) (*user.CreateOutput, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", c, input)
-	ret0, _ := ret[0].(*domain.User)
+	ret0, _ := ret[0].(*user.CreateOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -63,28 +62,67 @@ type MockUserUsecaseCreateCall struct {
 }
 
 // Return rewrite *gomock.Call.Return
-func (c_2 *MockUserUsecaseCreateCall) Return(arg0 *domain.User, arg1 error) *MockUserUsecaseCreateCall {
+func (c_2 *MockUserUsecaseCreateCall) Return(arg0 *user.CreateOutput, arg1 error) *MockUserUsecaseCreateCall {
 	c_2.Call = c_2.Call.Return(arg0, arg1)
 	return c_2
 }
 
 // Do rewrite *gomock.Call.Do
-func (c_2 *MockUserUsecaseCreateCall) Do(f func(context.Context, *user.CreateInput) (*domain.User, error)) *MockUserUsecaseCreateCall {
+func (c_2 *MockUserUsecaseCreateCall) Do(f func(context.Context, *user.CreateInput) (*user.CreateOutput, error)) *MockUserUsecaseCreateCall {
 	c_2.Call = c_2.Call.Do(f)
 	return c_2
 }
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c_2 *MockUserUsecaseCreateCall) DoAndReturn(f func(context.Context, *user.CreateInput) (*domain.User, error)) *MockUserUsecaseCreateCall {
+func (c_2 *MockUserUsecaseCreateCall) DoAndReturn(f func(context.Context, *user.CreateInput) (*user.CreateOutput, error)) *MockUserUsecaseCreateCall {
+	c_2.Call = c_2.Call.DoAndReturn(f)
+	return c_2
+}
+
+// Get mocks base method.
+func (m *MockUserUsecase) Get(c context.Context, input *user.GetInput) (*user.GetOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", c, input)
+	ret0, _ := ret[0].(*user.GetOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockUserUsecaseMockRecorder) Get(c, input any) *MockUserUsecaseGetCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockUserUsecase)(nil).Get), c, input)
+	return &MockUserUsecaseGetCall{Call: call}
+}
+
+// MockUserUsecaseGetCall wrap *gomock.Call
+type MockUserUsecaseGetCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c_2 *MockUserUsecaseGetCall) Return(arg0 *user.GetOutput, arg1 error) *MockUserUsecaseGetCall {
+	c_2.Call = c_2.Call.Return(arg0, arg1)
+	return c_2
+}
+
+// Do rewrite *gomock.Call.Do
+func (c_2 *MockUserUsecaseGetCall) Do(f func(context.Context, *user.GetInput) (*user.GetOutput, error)) *MockUserUsecaseGetCall {
+	c_2.Call = c_2.Call.Do(f)
+	return c_2
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c_2 *MockUserUsecaseGetCall) DoAndReturn(f func(context.Context, *user.GetInput) (*user.GetOutput, error)) *MockUserUsecaseGetCall {
 	c_2.Call = c_2.Call.DoAndReturn(f)
 	return c_2
 }
 
 // GetByPhoneNumber mocks base method.
-func (m *MockUserUsecase) GetByPhoneNumber(c context.Context, input *user.GetByPhoneNumberInput) (*domain.User, error) {
+func (m *MockUserUsecase) GetByPhoneNumber(c context.Context, input *user.GetByPhoneNumberInput) (*user.GetOutput, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByPhoneNumber", c, input)
-	ret0, _ := ret[0].(*domain.User)
+	ret0, _ := ret[0].(*user.GetOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -102,19 +140,19 @@ type MockUserUsecaseGetByPhoneNumberCall struct {
 }
 
 // Return rewrite *gomock.Call.Return
-func (c_2 *MockUserUsecaseGetByPhoneNumberCall) Return(arg0 *domain.User, arg1 error) *MockUserUsecaseGetByPhoneNumberCall {
+func (c_2 *MockUserUsecaseGetByPhoneNumberCall) Return(arg0 *user.GetOutput, arg1 error) *MockUserUsecaseGetByPhoneNumberCall {
 	c_2.Call = c_2.Call.Return(arg0, arg1)
 	return c_2
 }
 
 // Do rewrite *gomock.Call.Do
-func (c_2 *MockUserUsecaseGetByPhoneNumberCall) Do(f func(context.Context, *user.GetByPhoneNumberInput) (*domain.User, error)) *MockUserUsecaseGetByPhoneNumberCall {
+func (c_2 *MockUserUsecaseGetByPhoneNumberCall) Do(f func(context.Context, *user.GetByPhoneNumberInput) (*user.GetOutput, error)) *MockUserUsecaseGetByPhoneNumberCall {
 	c_2.Call = c_2.Call.Do(f)
 	return c_2
 }
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c_2 *MockUserUsecaseGetByPhoneNumberCall) DoAndReturn(f func(context.Context, *user.GetByPhoneNumberInput) (*domain.User, error)) *MockUserUsecaseGetByPhoneNumberCall {
+func (c_2 *MockUserUsecaseGetByPhoneNumberCall) DoAndReturn(f func(context.Context, *user.GetByPhoneNumberInput) (*user.GetOutput, error)) *MockUserUsecaseGetByPhoneNumberCall {
 	c_2.Call = c_2.Call.DoAndReturn(f)
 	return c_2
 }

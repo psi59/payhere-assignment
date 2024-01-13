@@ -78,6 +78,45 @@ func (c_2 *MockUserRepositoryCreateCall) DoAndReturn(f func(context.Context, *do
 	return c_2
 }
 
+// Get mocks base method.
+func (m *MockUserRepository) Get(c context.Context, userID int) (*domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", c, userID)
+	ret0, _ := ret[0].(*domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockUserRepositoryMockRecorder) Get(c, userID any) *MockUserRepositoryGetCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockUserRepository)(nil).Get), c, userID)
+	return &MockUserRepositoryGetCall{Call: call}
+}
+
+// MockUserRepositoryGetCall wrap *gomock.Call
+type MockUserRepositoryGetCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c_2 *MockUserRepositoryGetCall) Return(arg0 *domain.User, arg1 error) *MockUserRepositoryGetCall {
+	c_2.Call = c_2.Call.Return(arg0, arg1)
+	return c_2
+}
+
+// Do rewrite *gomock.Call.Do
+func (c_2 *MockUserRepositoryGetCall) Do(f func(context.Context, int) (*domain.User, error)) *MockUserRepositoryGetCall {
+	c_2.Call = c_2.Call.Do(f)
+	return c_2
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c_2 *MockUserRepositoryGetCall) DoAndReturn(f func(context.Context, int) (*domain.User, error)) *MockUserRepositoryGetCall {
+	c_2.Call = c_2.Call.DoAndReturn(f)
+	return c_2
+}
+
 // GetByPhoneNumber mocks base method.
 func (m *MockUserRepository) GetByPhoneNumber(c context.Context, phoneNumber string) (*domain.User, error) {
 	m.ctrl.T.Helper()
@@ -178,41 +217,41 @@ func (c_2 *MockTokenBlacklistRepositoryCreateCall) DoAndReturn(f func(context.Co
 	return c_2
 }
 
-// IsExists mocks base method.
-func (m *MockTokenBlacklistRepository) IsExists(c context.Context, token string) (bool, error) {
+// Get mocks base method.
+func (m *MockTokenBlacklistRepository) Get(c context.Context, token string) (*domain.AuthToken, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsExists", c, token)
-	ret0, _ := ret[0].(bool)
+	ret := m.ctrl.Call(m, "Get", c, token)
+	ret0, _ := ret[0].(*domain.AuthToken)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// IsExists indicates an expected call of IsExists.
-func (mr *MockTokenBlacklistRepositoryMockRecorder) IsExists(c, token any) *MockTokenBlacklistRepositoryIsExistsCall {
+// Get indicates an expected call of Get.
+func (mr *MockTokenBlacklistRepositoryMockRecorder) Get(c, token any) *MockTokenBlacklistRepositoryGetCall {
 	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsExists", reflect.TypeOf((*MockTokenBlacklistRepository)(nil).IsExists), c, token)
-	return &MockTokenBlacklistRepositoryIsExistsCall{Call: call}
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockTokenBlacklistRepository)(nil).Get), c, token)
+	return &MockTokenBlacklistRepositoryGetCall{Call: call}
 }
 
-// MockTokenBlacklistRepositoryIsExistsCall wrap *gomock.Call
-type MockTokenBlacklistRepositoryIsExistsCall struct {
+// MockTokenBlacklistRepositoryGetCall wrap *gomock.Call
+type MockTokenBlacklistRepositoryGetCall struct {
 	*gomock.Call
 }
 
 // Return rewrite *gomock.Call.Return
-func (c_2 *MockTokenBlacklistRepositoryIsExistsCall) Return(arg0 bool, arg1 error) *MockTokenBlacklistRepositoryIsExistsCall {
+func (c_2 *MockTokenBlacklistRepositoryGetCall) Return(arg0 *domain.AuthToken, arg1 error) *MockTokenBlacklistRepositoryGetCall {
 	c_2.Call = c_2.Call.Return(arg0, arg1)
 	return c_2
 }
 
 // Do rewrite *gomock.Call.Do
-func (c_2 *MockTokenBlacklistRepositoryIsExistsCall) Do(f func(context.Context, string) (bool, error)) *MockTokenBlacklistRepositoryIsExistsCall {
+func (c_2 *MockTokenBlacklistRepositoryGetCall) Do(f func(context.Context, string) (*domain.AuthToken, error)) *MockTokenBlacklistRepositoryGetCall {
 	c_2.Call = c_2.Call.Do(f)
 	return c_2
 }
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c_2 *MockTokenBlacklistRepositoryIsExistsCall) DoAndReturn(f func(context.Context, string) (bool, error)) *MockTokenBlacklistRepositoryIsExistsCall {
+func (c_2 *MockTokenBlacklistRepositoryGetCall) DoAndReturn(f func(context.Context, string) (*domain.AuthToken, error)) *MockTokenBlacklistRepositoryGetCall {
 	c_2.Call = c_2.Call.DoAndReturn(f)
 	return c_2
 }

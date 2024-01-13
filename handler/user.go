@@ -4,26 +4,17 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
-	"github.com/rs/zerolog/log"
-
-	"github.com/psi59/payhere-assignment/internal/i18n"
-
-	"github.com/psi59/payhere-assignment/usecase/authtoken"
-
-	"github.com/psi59/payhere-assignment/internal/ginhelper"
-
-	"github.com/psi59/payhere-assignment/internal/ctxlog"
-
-	"github.com/psi59/payhere-assignment/usecase/user"
-
-	"github.com/pkg/errors"
-	"github.com/psi59/payhere-assignment/internal/valid"
-
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
+	"github.com/psi59/gopkg/ctxlog"
 	"github.com/psi59/payhere-assignment/domain"
+	"github.com/psi59/payhere-assignment/internal/ginhelper"
+	"github.com/psi59/payhere-assignment/internal/i18n"
+	"github.com/psi59/payhere-assignment/internal/valid"
+	"github.com/psi59/payhere-assignment/usecase/authtoken"
+	"github.com/psi59/payhere-assignment/usecase/user"
 )
 
 type UserHandler struct {
@@ -45,18 +36,18 @@ func NewUserHandler(userUsecase user.Usecase, authTokenUsecase authtoken.Usecase
 	}, nil
 }
 
-func (h *UserHandler) SignUp(c *gin.Context) {
-	ctx := ginhelper.GetContext(c)
+func (h *UserHandler) SignUp(ginCtx *gin.Context) {
+	ctx := ginhelper.GetContext(ginCtx)
 	var req SignUpRequest
-	if err := c.BindJSON(&req); err != nil {
-		_ = c.Error(errors.WithStack(domain.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, err)))
+	if err := ginCtx.BindJSON(&req); err != nil {
+		_ = ginCtx.Error(errors.WithStack(domain.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, err)))
 		return
 	}
 	if err := req.Validate(); err != nil {
-		_ = c.Error(errors.WithStack(domain.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, err)))
+		_ = ginCtx.Error(errors.WithStack(domain.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, err)))
 		return
 	}
-	userDomain, err := h.userUsecase.Create(ctx, &user.CreateInput{
+	userCreateOutput, err := h.userUsecase.Create(ctx, &user.CreateInput{
 		Name:        req.Name,
 		PhoneNumber: req.PhoneNumber,
 		Password:    req.Password,
@@ -64,52 +55,53 @@ func (h *UserHandler) SignUp(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, domain.ErrDuplicatedUser):
-			_ = c.Error(errors.WithStack(domain.NewHTTPError(http.StatusConflict, i18n.UserAlreadyExists, err)))
+			_ = ginCtx.Error(errors.WithStack(domain.NewHTTPError(http.StatusConflict, i18n.UserAlreadyExists, err)))
 		default:
-			_ = c.Error(errors.WithStack(err))
+			_ = ginCtx.Error(errors.WithStack(err))
 		}
 
 		return
 	}
-	ctxlog.WithInt(ctx, "userID", userDomain.ID)
+	ctxlog.WithInt(ctx, "userID", userCreateOutput.User.ID)
 
-	c.Status(http.StatusNoContent)
+	ginCtx.Status(http.StatusNoContent)
 }
 
-func (h *UserHandler) SignIn(c *gin.Context) {
-	ctx := ginhelper.GetContext(c)
+func (h *UserHandler) SignIn(ginCtx *gin.Context) {
+	ctx := ginhelper.GetContext(ginCtx)
 	var req SignInRequest
-	if err := c.BindJSON(&req); err != nil {
-		_ = c.Error(errors.WithStack(domain.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, err)))
+	if err := ginCtx.BindJSON(&req); err != nil {
+		_ = ginCtx.Error(errors.WithStack(domain.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, err)))
 		return
 	}
 	if err := valid.ValidateStruct(req); err != nil {
-		_ = c.Error(errors.WithStack(domain.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, err)))
+		_ = ginCtx.Error(errors.WithStack(domain.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, err)))
 		return
 	}
 
-	userDomain, err := h.userUsecase.GetByPhoneNumber(ctx, &user.GetByPhoneNumberInput{PhoneNumber: req.PhoneNumber})
+	userGetOutput, err := h.userUsecase.GetByPhoneNumber(ctx, &user.GetByPhoneNumberInput{PhoneNumber: req.PhoneNumber})
 	if err != nil {
 		if errors.Is(err, domain.ErrUserNotFound) {
-			_ = c.Error(errors.WithStack(domain.NewHTTPError(http.StatusNotFound, i18n.UserNotFound, err)))
+			_ = ginCtx.Error(errors.WithStack(domain.NewHTTPError(http.StatusNotFound, i18n.UserNotFound, err)))
 			return
 		}
 
-		_ = c.Error(errors.WithStack(err))
+		_ = ginCtx.Error(errors.WithStack(err))
 		return
 	}
+	userDomain := userGetOutput.User
 	if err := userDomain.ComparePassword(req.Password); err != nil {
-		_ = c.Error(errors.WithStack(domain.NewHTTPError(http.StatusBadRequest, i18n.PasswordMismatch, err)))
+		_ = ginCtx.Error(errors.WithStack(domain.NewHTTPError(http.StatusBadRequest, i18n.PasswordMismatch, err)))
 		return
 	}
 
 	createTokenOutput, err := h.authTokenUsecase.Create(ctx, &authtoken.CreateInput{Identifier: strconv.Itoa(userDomain.ID)})
 	if err != nil {
-		_ = c.Error(errors.WithStack(err))
+		_ = ginCtx.Error(errors.WithStack(err))
 		return
 	}
 
-	c.JSON(http.StatusOK, domain.Response{
+	ginCtx.JSON(http.StatusOK, domain.Response{
 		Meta: domain.ResponseMeta{
 			Code:    200,
 			Message: "ok",
@@ -121,22 +113,21 @@ func (h *UserHandler) SignIn(c *gin.Context) {
 	})
 }
 
-func (h *UserHandler) SignOut(c *gin.Context) {
-	ctx := ginhelper.GetContext(c)
-	token := strings.TrimPrefix(c.GetHeader("Authorization"), "Bearer ")
-	if len(token) > 0 {
-		if err := h.authTokenUsecase.RegisterToBlacklist(ctx, &authtoken.RegisterToBlacklistInput{Token: token}); err != nil {
-			// 토큰 블랙리스트 중복 등록일 경우 200 반환
-			if !errors.Is(err, domain.ErrDuplicatedTokenBlacklist) {
-				_ = c.Error(err)
-				return
-			}
+func (h *UserHandler) SignOut(ginCtx *gin.Context) {
+	ctx := ginhelper.GetContext(ginCtx)
+	token := ginhelper.GetToken(ginCtx)
 
-			log.Warn().Err(err).Send()
+	if err := h.authTokenUsecase.RegisterBlacklist(ctx, &authtoken.RegisterBlacklistInput{Token: token}); err != nil {
+		if errors.Is(err, domain.ErrDuplicatedTokenBlacklist) {
+			_ = ginCtx.Error(errors.WithStack(domain.NewHTTPError(http.StatusUnauthorized, i18n.TokenBlacklistAlreadyExists, err)))
+			return
 		}
+
+		_ = ginCtx.Error(errors.WithStack(err))
+		return
 	}
 
-	c.JSON(http.StatusOK, domain.Response{
+	ginCtx.JSON(http.StatusOK, domain.Response{
 		Meta: domain.ResponseMeta{
 			Code:    http.StatusOK,
 			Message: "ok",

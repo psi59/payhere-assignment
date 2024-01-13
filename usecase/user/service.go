@@ -25,7 +25,7 @@ func NewService(userRepository repository.UserRepository) (*Service, error) {
 	}, nil
 }
 
-func (s *Service) Create(c context.Context, input *CreateInput) (*domain.User, error) {
+func (s *Service) Create(c context.Context, input *CreateInput) (*CreateOutput, error) {
 	if valid.IsNil(c) {
 		return nil, domain.ErrNilContext
 	}
@@ -42,10 +42,29 @@ func (s *Service) Create(c context.Context, input *CreateInput) (*domain.User, e
 		return nil, errors.WithStack(err)
 	}
 
-	return user, nil
+	return &CreateOutput{User: user}, nil
 }
 
-func (s *Service) GetByPhoneNumber(c context.Context, input *GetByPhoneNumberInput) (*domain.User, error) {
+func (s *Service) Get(c context.Context, input *GetInput) (*GetOutput, error) {
+	if valid.IsNil(c) {
+		return nil, domain.ErrNilContext
+	}
+	if valid.IsNil(input) {
+		return nil, domain.ErrNilInput
+	}
+	if err := valid.ValidateStruct(input); err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	user, err := s.userRepository.Get(c, input.UserID)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return &GetOutput{User: user}, nil
+}
+
+func (s *Service) GetByPhoneNumber(c context.Context, input *GetByPhoneNumberInput) (*GetOutput, error) {
 	if valid.IsNil(c) {
 		return nil, domain.ErrNilContext
 	}
@@ -61,5 +80,5 @@ func (s *Service) GetByPhoneNumber(c context.Context, input *GetByPhoneNumberInp
 		return nil, errors.WithStack(err)
 	}
 
-	return user, nil
+	return &GetOutput{User: user}, nil
 }

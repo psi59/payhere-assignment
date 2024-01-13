@@ -19,7 +19,7 @@ import (
 	"github.com/psi59/payhere-assignment/internal/db"
 	"github.com/psi59/payhere-assignment/internal/ginhelper"
 	"github.com/psi59/payhere-assignment/internal/valid"
-	"github.com/psi59/payhere-assignment/middlware"
+	"github.com/psi59/payhere-assignment/middleware"
 	"github.com/psi59/payhere-assignment/repository"
 	"github.com/psi59/payhere-assignment/usecase/user"
 	"github.com/rs/zerolog/log"
@@ -61,6 +61,9 @@ func runServeCommand(cmd *cobra.Command, _ []string) {
 type APIServer struct {
 	engine *gin.Engine
 	config APIServerConfig
+
+	// Middleware
+	Authenticator *middleware.Authenticator
 
 	// Handlers
 	UserHandler *handler.UserHandler
@@ -151,26 +154,33 @@ func (s *APIServer) initRoutes() {
 	v1 := engine.Group("/v1")
 	v1.Use(
 		requestid.New(),
-		middlware.SetContext(),
+		middleware.SetContext(),
 		func(c *gin.Context) {
 			ctx := ginhelper.GetContext(c)
 			ctx = db.ContextWithConn(ctx, s.dbConn)
 			ginhelper.SetContext(c, ctx)
 			c.Next()
 		},
-		middlware.ErrorMiddleware(),
+		middleware.ErrorMiddleware(),
 	)
 
 	{
 		v1User := v1.Group("/users")
 		v1User.POST("/signUp", s.UserHandler.SignUp)
 		v1User.POST("/signIn", s.UserHandler.SignIn)
-		v1User.POST("/signOut", s.UserHandler.SignOut)
+		v1User.POST("/signOut", s.Authenticator.Auth(), s.UserHandler.SignOut)
 	}
 
 }
 
 func (s *APIServer) initMiddleware() error {
+	authenticator, err := middleware.NewAuthenticator(s.UserUsecase, s.AuthTokenUsecase)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	s.Authenticator = authenticator
+
 	return nil
 }
 

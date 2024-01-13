@@ -54,7 +54,7 @@ func TestTokenBlacklistRepository_Create(t *testing.T) {
 	})
 }
 
-func TestTokenBlacklistRepository_IsExists(t *testing.T) {
+func TestTokenBlacklistRepository_Get(t *testing.T) {
 	repo := NewTokenBlacklistRepository()
 	ctx := db.ContextWithConn(context.TODO(), conn)
 
@@ -63,33 +63,33 @@ func TestTokenBlacklistRepository_IsExists(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("OK", func(t *testing.T) {
-		got, err := repo.IsExists(ctx, token.Token)
+		got, err := repo.Get(ctx, token.Token)
 		require.NoError(t, err)
-		require.True(t, got)
+		require.Equal(t, token, got)
 	})
 
 	t.Run("token not exists", func(t *testing.T) {
-		got, err := repo.IsExists(ctx, gofakeit.UUID())
-		require.NoError(t, err)
-		require.False(t, got)
+		got, err := repo.Get(ctx, gofakeit.UUID())
+		require.Error(t, err)
+		require.Nil(t, got)
 	})
 
 	t.Run("nil Context", func(t *testing.T) {
-		got, err := repo.IsExists(nil, gofakeit.UUID())
+		got, err := repo.Get(nil, gofakeit.UUID())
 		require.Error(t, err)
-		require.False(t, got)
+		require.Nil(t, got)
 	})
 
 	t.Run("empty token", func(t *testing.T) {
-		got, err := repo.IsExists(ctx, "")
+		got, err := repo.Get(ctx, "")
 		require.Error(t, err)
-		require.False(t, got)
+		require.Nil(t, got)
 	})
 
 	t.Run("context without conn", func(t *testing.T) {
-		got, err := repo.IsExists(context.TODO(), gofakeit.UUID())
+		got, err := repo.Get(context.TODO(), gofakeit.UUID())
 		require.Error(t, err)
-		require.False(t, got)
+		require.Nil(t, got)
 	})
 }
 

@@ -43,30 +43,33 @@ func (r *TokenBlacklistRepository) Create(c context.Context, token *domain.AuthT
 	return nil
 }
 
-func (r *TokenBlacklistRepository) IsExists(c context.Context, token string) (bool, error) {
+func (r *TokenBlacklistRepository) Get(c context.Context, token string) (*domain.AuthToken, error) {
 	if valid.IsNil(c) {
-		return false, domain.ErrNilContext
+		return nil, domain.ErrNilContext
 	}
 	if len(token) == 0 {
-		return false, fmt.Errorf("empty token")
+		return nil, fmt.Errorf("empty token")
 	}
 	conn, err := db.ConnFromContext(c)
 	if err != nil {
-		return false, errors.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
 
-	var record struct {
-		Exist bool `gorm:"exist"`
+	record := AuthToken{
+		Token: token,
 	}
-	if err := conn.Model(&AuthToken{}).Select("1 AS exist").Where("token = ?", token).Take(&record).Error; err != nil {
+	if err := conn.Where("token = ?", token).Take(&record).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return false, nil
+			return nil, errors.Wrap(domain.ErrTokenBlacklistNotFound, err.Error())
 		}
 
-		return false, errors.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
 
-	return record.Exist, nil
+	return &domain.AuthToken{
+		Token:     record.Token,
+		ExpiresAt: record.ExpiresAt,
+	}, nil
 }
 
 type AuthToken struct {

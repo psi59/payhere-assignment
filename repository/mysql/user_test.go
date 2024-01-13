@@ -66,6 +66,45 @@ func newTestUser(t *testing.T) *domain.User {
 	return user
 }
 
+func TestUserRepository_Get(t *testing.T) {
+	repo := NewUserRepository()
+	ctx := db.ContextWithConn(context.TODO(), conn)
+
+	user := newTestUser(t)
+	err := repo.Create(ctx, user)
+	require.NoError(t, err)
+
+	t.Run("OK", func(t *testing.T) {
+		got, err := repo.Get(ctx, user.ID)
+		require.NoError(t, err)
+		require.Equal(t, user, got)
+	})
+
+	t.Run("nil Context", func(t *testing.T) {
+		got, err := repo.Get(nil, user.ID)
+		require.Error(t, err)
+		require.Nil(t, got)
+	})
+
+	t.Run("invalid userID", func(t *testing.T) {
+		got, err := repo.Get(ctx, gofakeit.IntRange(-10, 0))
+		require.Error(t, err)
+		require.Nil(t, got)
+	})
+
+	t.Run("context without conn", func(t *testing.T) {
+		got, err := repo.Get(context.TODO(), user.ID)
+		require.Error(t, err)
+		require.Nil(t, got)
+	})
+
+	t.Run("UserNotFound", func(t *testing.T) {
+		got, err := repo.Get(ctx, gofakeit.IntRange(10000, 20000))
+		require.Error(t, err)
+		require.Nil(t, got)
+	})
+}
+
 func TestUserRepository_GetByPhoneNumber(t *testing.T) {
 	repo := NewUserRepository()
 	ctx := db.ContextWithConn(context.TODO(), conn)

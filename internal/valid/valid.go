@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	regexpPhoneNumber = regexp.MustCompile(`01\d{8,9}`)
+	regexpPhoneNumber = regexp.MustCompile(`^01\d{8,9}$`)
 	regexpNumeric     = regexp.MustCompile(`\d`)
 	regexpLowerCase   = regexp.MustCompile(`[a-z]`)
 	regexpUpperCase   = regexp.MustCompile(`[A-Z]`)

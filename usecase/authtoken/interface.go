@@ -10,7 +10,8 @@ import (
 type Usecase interface {
 	Create(c context.Context, input *CreateInput) (*CreateOutput, error)
 	Verify(c context.Context, input *VerifyInput) (*VerifyOutput, error)
-	RegisterToBlacklist(c context.Context, input *RegisterToBlacklistInput) error
+	RegisterBlacklist(c context.Context, input *RegisterBlacklistInput) error
+	GetBlacklist(c context.Context, input *GetBlacklistInput) (*GetBlacklistOutput, error)
 }
 
 const ErrNilUsecase domain.ConstantError = "nil AuthTokenUsecase"
@@ -33,6 +34,14 @@ type VerifyOutput struct {
 	ExpiresAt  time.Time
 }
 
-type RegisterToBlacklistInput struct {
+type RegisterBlacklistInput struct {
 	Token string `validate:"required"`
+}
+
+type GetBlacklistInput struct {
+	Token string `validate:"required"`
+}
+
+type GetBlacklistOutput struct {
+	Token *domain.AuthToken
 }

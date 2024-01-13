@@ -103,7 +103,7 @@ func (s *Service) Verify(c context.Context, input *VerifyInput) (*VerifyOutput, 
 	}, nil
 }
 
-func (s *Service) RegisterToBlacklist(c context.Context, input *RegisterToBlacklistInput) error {
+func (s *Service) RegisterBlacklist(c context.Context, input *RegisterBlacklistInput) error {
 	switch {
 	case valid.IsNil(c):
 		return domain.ErrNilContext
@@ -132,6 +132,25 @@ func (s *Service) RegisterToBlacklist(c context.Context, input *RegisterToBlackl
 	}
 
 	return nil
+}
+
+func (s *Service) GetBlacklist(c context.Context, input *GetBlacklistInput) (*GetBlacklistOutput, error) {
+	switch {
+	case valid.IsNil(c):
+		return nil, domain.ErrNilContext
+	case valid.IsNil(input):
+		return nil, domain.ErrNilInput
+	}
+	if err := valid.ValidateStruct(input); err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	token, err := s.tokenBlacklistRepository.Get(c, input.Token)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return &GetBlacklistOutput{Token: token}, nil
 }
 
 func (s *Service) createJWT(claims jwt.Claims, secret []byte) (string, error) {

@@ -1,37 +1,31 @@
 package valid
 
 import (
-	"crypto/sha256"
-	"encoding/base64"
-	"io"
-	"os"
 	"testing"
 
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/stretchr/testify/require"
 )
 
-func TestName(t *testing.T) {
-	f, err := os.Open("/Users/psi59/Downloads/IMG_250sqa.gif")
-	require.NoError(t, err)
-
-	h := sha256.New()
-	_, err = io.Copy(h, f)
-	require.NoError(t, err)
-	b := h.Sum(nil)
-	t.Log(base64.StdEncoding.EncodeToString(b))
-}
-
 func TestValidatePhoneNumber(t *testing.T) {
 	t.Run("01012341234", func(t *testing.T) {
-		require.NoError(t, ValidatePhoneNumber("01012341234"))
+		phoneNumber := gofakeit.Regex(`^01\d{8,9}$`)
+		t.Logf("phoneNumber: %s", phoneNumber)
+		require.NoError(t, ValidatePhoneNumber(phoneNumber))
 	})
 
-	t.Run("0161231234", func(t *testing.T) {
-		require.NoError(t, ValidatePhoneNumber("01612341234"))
+	t.Run("invalid phoneNumber: uuid", func(t *testing.T) {
+		require.Error(t, ValidatePhoneNumber(gofakeit.UUID()))
 	})
 
-	t.Run("0212341111", func(t *testing.T) {
-		require.Error(t, ValidatePhoneNumber("0212341111"))
+	t.Run("invalid phoneNumber: length", func(t *testing.T) {
+		phoneNumber := gofakeit.Regex(`01\d{0,7}`)
+		t.Logf("phoneNumber: %s", phoneNumber)
+		require.Error(t, ValidatePhoneNumber(phoneNumber))
+
+		phoneNumber = gofakeit.Regex(`01\d{10,15}`)
+		t.Logf("phoneNumber: %s", phoneNumber)
+		require.Error(t, ValidatePhoneNumber(phoneNumber))
 	})
 }
 
@@ -44,19 +38,27 @@ func TestValidatePassword(t *testing.T) {
 		require.Error(t, ValidatePassword(""))
 	})
 
-	t.Run("numeric not contains", func(t *testing.T) {
-		require.Error(t, ValidatePassword("Test!"))
+	t.Run("Lower case not contains", func(t *testing.T) {
+		pwd := gofakeit.Password(false, true, true, true, true, 10)
+		err := ValidatePassword(pwd)
+		require.Error(t, err)
 	})
 
 	t.Run("Upper case not contains", func(t *testing.T) {
-		require.Error(t, ValidatePassword("test1!"))
+		pwd := gofakeit.Password(true, false, true, true, true, 10)
+		err := ValidatePassword(pwd)
+		require.Error(t, err)
 	})
 
-	t.Run("Lower case not contains", func(t *testing.T) {
-		require.Error(t, ValidatePassword("TEST1!"))
+	t.Run("numeric not contains", func(t *testing.T) {
+		pwd := gofakeit.Password(true, true, false, true, true, 10)
+		err := ValidatePassword(pwd)
+		require.Error(t, err)
 	})
 
 	t.Run("Symbol not contains", func(t *testing.T) {
-		require.Error(t, ValidatePassword("test1"))
+		pwd := gofakeit.Password(true, true, true, false, false, 10)
+		err := ValidatePassword(pwd)
+		require.Error(t, err)
 	})
 }

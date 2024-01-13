@@ -16,6 +16,7 @@
 
 # CONFLICT
 "UserAlreadyExists" = "The specified user already exists."
+"TokenBlacklistAlreadyExists" = "The specified token already exists in token blacklist."
 
 # INTERNAL SERVER ERROR
 "InternalError" = "The server encountered an internal error. Please retry the request."

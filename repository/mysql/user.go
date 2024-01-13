@@ -49,6 +49,37 @@ func (r *UserRepository) Create(c context.Context, user *domain.User) error {
 	return nil
 }
 
+func (r *UserRepository) Get(c context.Context, userID int) (*domain.User, error) {
+	switch {
+	case valid.IsNil(c):
+		return nil, domain.ErrNilUser
+	case userID < 1:
+		return nil, fmt.Errorf("invalid userID")
+	}
+
+	conn, err := db.ConnFromContext(c)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	userModel := User{UserID: userID}
+	if err := conn.Take(&userModel).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, domain.ErrUserNotFound
+		}
+
+		return nil, errors.WithStack(err)
+	}
+
+	return &domain.User{
+		ID:          userModel.UserID,
+		Name:        userModel.UserName,
+		PhoneNumber: userModel.PhoneNumber,
+		Password:    userModel.Password,
+		CreatedAt:   userModel.CreatedAt,
+	}, nil
+}
+
 func (r *UserRepository) GetByPhoneNumber(c context.Context, phoneNumber string) (*domain.User, error) {
 	switch {
 	case valid.IsNil(c):

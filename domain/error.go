@@ -12,6 +12,7 @@ const (
 	ErrNilInput                 ConstantError = "nil Input"
 	ErrExpiredToken             ConstantError = "ExpiredToken"
 	ErrUserNotFound             ConstantError = "UserNotFound"
+	ErrTokenBlacklistNotFound   ConstantError = "TokenBlacklistNotFound"
 	ErrInvalidRequest           ConstantError = "InvalidRequest"
 	ErrPasswordMismatch         ConstantError = "PasswordMismatch"
 	ErrDuplicatedUser           ConstantError = "DuplicatedUser"

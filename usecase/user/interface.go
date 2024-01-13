@@ -12,8 +12,9 @@ import (
 const ErrNilUsecase domain.ConstantError = "nil UserUsecase"
 
 type Usecase interface {
-	Create(c context.Context, input *CreateInput) (*domain.User, error)
-	GetByPhoneNumber(c context.Context, input *GetByPhoneNumberInput) (*domain.User, error)
+	Create(c context.Context, input *CreateInput) (*CreateOutput, error)
+	Get(c context.Context, input *GetInput) (*GetOutput, error)
+	GetByPhoneNumber(c context.Context, input *GetByPhoneNumberInput) (*GetOutput, error)
 }
 
 type CreateInput struct {
@@ -32,6 +33,18 @@ func (i *CreateInput) Validate() error {
 	}
 
 	return nil
+}
+
+type CreateOutput struct {
+	User *domain.User
+}
+
+type GetInput struct {
+	UserID int `validate:"gt=0"`
+}
+
+type GetOutput struct {
+	User *domain.User
 }
 
 type GetByPhoneNumberInput struct {
