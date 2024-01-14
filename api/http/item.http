@@ -1,0 +1,50 @@
+### 아이템 생성
+POST {{host}}/v1/items
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "name":  "슈크림 라떼",
+  "description": "슈프림 카페모카",
+  "price":  10000,
+  "cost": 5000,
+  "category":  "coffee",
+  "barcode": "0123456789013",
+  "size":  "small",
+  "expiryAt": "{{$isoTimestamp}}"
+}
+
+> {%
+    console.log(response.body.data.id);
+    client.global.set("itemId", response.body.data.id);
+%}
+
+### 아이템 상세 조회
+GET {{host}}/v1/items/{{itemId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+> {%
+    console.log(response.body.data.id);
+    client.global.set("itemId", response.body.data.id);
+%}
+
+### 아이템 수정
+PUT {{host}}/v1/items/{{itemId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "name": "슈크림 라떼",
+  "description": "자몽 에이드"
+}
+
+### 아이템 삭제
+DELETE {{host}}/v1/items/{{itemId}}
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+### 아이템 목록 조회
+GET {{host}}/v1/items?keyword=슈크림
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}

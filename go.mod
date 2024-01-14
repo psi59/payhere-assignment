@@ -5,6 +5,7 @@ go 1.21.6
 require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/brianvoe/gofakeit/v6 v6.26.4
+	github.com/daangn/gorean v0.0.5
 	github.com/gin-contrib/requestid v0.0.6
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-playground/validator/v10 v10.16.0

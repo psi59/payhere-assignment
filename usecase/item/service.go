@@ -154,3 +154,32 @@ func (s *Service) Update(c context.Context, input *UpdateInput) error {
 	// 3. 결과 반환
 	return nil
 }
+
+func (s *Service) Find(c context.Context, input *FindInput) (*FindOutput, error) {
+	switch {
+	case valid.IsNil(c):
+		return nil, domain.ErrNilContext
+	case valid.IsNil(input):
+		return nil, domain.ErrNilInput
+	}
+	if err := input.Validate(); err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	param := &repository.FindItemInput{
+		UserID:      input.User.ID,
+		Keyword:     input.Keyword,
+		SearchAfter: input.SearchAfter,
+	}
+	findItemOutput, err := s.itemRepository.Find(c, param)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return &FindOutput{
+		TotalCount:  findItemOutput.TotalCount,
+		Items:       findItemOutput.Items,
+		HasNext:     findItemOutput.HasNext,
+		SearchAfter: findItemOutput.SearchAfter,
+	}, nil
+}

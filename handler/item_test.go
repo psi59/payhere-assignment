@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 	"time"
 
@@ -755,6 +756,133 @@ func TestItemHandler_Update(t *testing.T) {
 		r.ServeHTTP(responseWriter, httpRequest)
 
 		responseData := &GetItemResponse{}
+		resp := ginhelper.Response{Data: responseData}
+		err = json.NewDecoder(responseWriter.Body).Decode(&resp)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusInternalServerError, responseWriter.Code)
+		assert.Equal(t, http.StatusInternalServerError, resp.Meta.Code)
+		assert.Equal(t, i18n.T(language.English, i18n.InternalError, nil), resp.Meta.Message)
+	})
+}
+
+func TestItemHandler_Find(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	itemUsecase := ucmocks.NewMockItemTokenUsecase(ctrl)
+	r := gin.New()
+	handler, err := NewItemHandler(itemUsecase)
+	assert.NoError(t, err)
+	assert.NotNil(t, handler)
+
+	userDomain := newTestUser(t, gofakeit.Password(true, true, true, true, true, 10))
+	r.GET("/items", ginhelper.ContextMiddleware(), func(ginCtx *gin.Context) {
+		ctx := ginhelper.GetContext(ginCtx)
+		ctx = context.WithValue(ctx, domain.CtxKeyUser, userDomain)
+		ginhelper.SetContext(ginCtx, ctx)
+		ginCtx.Next()
+	}, handler.Find)
+	r.GET("/unauthorized", handler.Find)
+
+	t.Run("OK", func(t *testing.T) {
+		findOutput := &item.FindOutput{
+			TotalCount:  10,
+			Items:       []domain.Item{},
+			HasNext:     false,
+			SearchAfter: 0,
+		}
+		itemUsecase.EXPECT().Find(gomock.Any(), &item.FindInput{
+			User:        userDomain,
+			Keyword:     "ㄹㄸ",
+			SearchAfter: 10,
+		}).Return(findOutput, nil)
+
+		u, err := url.Parse("/items")
+		assert.NoError(t, err)
+		query := u.Query()
+		query.Set("keyword", "ㄹㄸ")
+		query.Set("searchAfter", "10")
+		u.RawQuery = query.Encode()
+		responseWriter := httptest.NewRecorder()
+		require.NoError(t, err)
+		httpRequest, err := http.NewRequest(http.MethodGet, u.String(), nil)
+		require.NoError(t, err)
+		r.ServeHTTP(responseWriter, httpRequest)
+
+		responseData := &FindItemResponse{}
+		resp := ginhelper.Response{Data: responseData}
+		err = json.NewDecoder(responseWriter.Body).Decode(&resp)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusOK, responseWriter.Code)
+		assert.Equal(t, findOutput.TotalCount, responseData.TotalCount)
+		assert.Equal(t, findOutput.HasNext, responseData.HasNext)
+		assert.Equal(t, findOutput.SearchAfter, responseData.SearchAfter)
+	})
+
+	t.Run("invalid request", func(t *testing.T) {
+		u, err := url.Parse("/items")
+		assert.NoError(t, err)
+		query := u.Query()
+		query.Set("keyword", "ㄹㄸ")
+		query.Set("searchAfter", "ㄹㄸ")
+		u.RawQuery = query.Encode()
+		responseWriter := httptest.NewRecorder()
+		require.NoError(t, err)
+		httpRequest, err := http.NewRequest(http.MethodGet, u.String(), nil)
+		require.NoError(t, err)
+		r.ServeHTTP(responseWriter, httpRequest)
+
+		responseData := &FindItemResponse{}
+		resp := ginhelper.Response{Data: responseData}
+		err = json.NewDecoder(responseWriter.Body).Decode(&resp)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, responseWriter.Code)
+		assert.Equal(t, http.StatusBadRequest, resp.Meta.Code)
+		assert.Equal(t, i18n.T(language.English, i18n.InvalidRequest, nil), resp.Meta.Message)
+	})
+
+	t.Run("unauthorized", func(t *testing.T) {
+		u, err := url.Parse("/unauthorized")
+		assert.NoError(t, err)
+		query := u.Query()
+		query.Set("keyword", "ㄹㄸ")
+		query.Set("searchAfter", "ㄹㄸ")
+		u.RawQuery = query.Encode()
+		responseWriter := httptest.NewRecorder()
+		require.NoError(t, err)
+		httpRequest, err := http.NewRequest(http.MethodGet, u.String(), nil)
+		require.NoError(t, err)
+		r.ServeHTTP(responseWriter, httpRequest)
+
+		responseData := &FindItemResponse{}
+		resp := ginhelper.Response{Data: responseData}
+		err = json.NewDecoder(responseWriter.Body).Decode(&resp)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusInternalServerError, responseWriter.Code)
+		assert.Equal(t, http.StatusInternalServerError, resp.Meta.Code)
+		assert.Equal(t, i18n.T(language.English, i18n.InternalError, nil), resp.Meta.Message)
+	})
+
+	t.Run("unexpected error", func(t *testing.T) {
+		itemUsecase.EXPECT().Find(gomock.Any(), &item.FindInput{
+			User:        userDomain,
+			Keyword:     "ㄹㄸ",
+			SearchAfter: 10,
+		}).Return(nil, gofakeit.Error())
+
+		u, err := url.Parse("/items")
+		assert.NoError(t, err)
+		query := u.Query()
+		query.Set("keyword", "ㄹㄸ")
+		query.Set("searchAfter", "10")
+		u.RawQuery = query.Encode()
+		responseWriter := httptest.NewRecorder()
+		require.NoError(t, err)
+		httpRequest, err := http.NewRequest(http.MethodGet, u.String(), nil)
+		require.NoError(t, err)
+		r.ServeHTTP(responseWriter, httpRequest)
+
+		responseData := &FindItemResponse{}
 		resp := ginhelper.Response{Data: responseData}
 		err = json.NewDecoder(responseWriter.Body).Decode(&resp)
 		require.NoError(t, err)

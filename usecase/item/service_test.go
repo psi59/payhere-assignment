@@ -368,6 +368,95 @@ func TestService_Update(t *testing.T) {
 	})
 }
 
+func TestService_Find(t *testing.T) {
+	ctx := context.TODO()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	itemRepository := repomocks.NewMockItemRepository(ctrl)
+	srv, err := NewService(itemRepository)
+	assert.NoError(t, err)
+
+	t.Run("OK", func(t *testing.T) {
+		input := &FindInput{
+			User:        userDomain,
+			Keyword:     "ㄹㄸ",
+			SearchAfter: gofakeit.Number(1, 100),
+		}
+		findItemOutput := &repository.FindItemOutput{
+			TotalCount: 10,
+			Items: []domain.Item{
+				*(newTestItem(t, userDomain.ID)),
+				*(newTestItem(t, userDomain.ID)),
+				*(newTestItem(t, userDomain.ID)),
+				*(newTestItem(t, userDomain.ID)),
+				*(newTestItem(t, userDomain.ID)),
+				*(newTestItem(t, userDomain.ID)),
+				*(newTestItem(t, userDomain.ID)),
+				*(newTestItem(t, userDomain.ID)),
+				*(newTestItem(t, userDomain.ID)),
+				*(newTestItem(t, userDomain.ID)),
+			},
+			HasNext:     true,
+			SearchAfter: 10,
+		}
+		itemRepository.EXPECT().Find(ctx, &repository.FindItemInput{
+			UserID:      userDomain.ID,
+			Keyword:     input.Keyword,
+			SearchAfter: input.SearchAfter,
+		}).Return(findItemOutput, nil)
+		got, err := srv.Find(ctx, input)
+		assert.NoError(t, err)
+		assert.NotNil(t, got)
+		assert.Equal(t, findItemOutput.Items, got.Items)
+		assert.Equal(t, findItemOutput.HasNext, got.HasNext)
+		assert.Equal(t, findItemOutput.TotalCount, got.TotalCount)
+		assert.Equal(t, findItemOutput.SearchAfter, got.SearchAfter)
+	})
+
+	t.Run("nil context", func(t *testing.T) {
+		got, err := srv.Find(nil, &FindInput{
+			User:        userDomain,
+			Keyword:     "",
+			SearchAfter: 0,
+		})
+		assert.Error(t, err)
+		assert.Nil(t, got)
+	})
+
+	t.Run("nil input", func(t *testing.T) {
+		got, err := srv.Find(ctx, nil)
+		assert.Error(t, err)
+		assert.Nil(t, got)
+	})
+
+	t.Run("invalid input", func(t *testing.T) {
+		got, err := srv.Find(ctx, &FindInput{
+			User:        nil,
+			Keyword:     "",
+			SearchAfter: 0,
+		})
+		assert.Error(t, err)
+		assert.Nil(t, got)
+	})
+
+	t.Run("unexpected error", func(t *testing.T) {
+		input := &FindInput{
+			User:        userDomain,
+			Keyword:     "ㄹㄸ",
+			SearchAfter: gofakeit.Number(1, 100),
+		}
+		itemRepository.EXPECT().Find(ctx, &repository.FindItemInput{
+			UserID:      userDomain.ID,
+			Keyword:     input.Keyword,
+			SearchAfter: input.SearchAfter,
+		}).Return(nil, gofakeit.Error())
+		got, err := srv.Find(ctx, input)
+		assert.Error(t, err)
+		assert.Nil(t, got)
+	})
+}
+
 func newTestItem(t *testing.T, userID int) *domain.Item {
 	item := &domain.Item{
 		ID:          gofakeit.Number(1, 10000),

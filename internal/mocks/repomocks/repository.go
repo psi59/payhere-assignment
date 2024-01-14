@@ -356,6 +356,45 @@ func (c_2 *MockItemRepositoryDeleteCall) DoAndReturn(f func(context.Context, int
 	return c_2
 }
 
+// Find mocks base method.
+func (m *MockItemRepository) Find(c context.Context, input *repository.FindItemInput) (*repository.FindItemOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", c, input)
+	ret0, _ := ret[0].(*repository.FindItemOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockItemRepositoryMockRecorder) Find(c, input any) *MockItemRepositoryFindCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockItemRepository)(nil).Find), c, input)
+	return &MockItemRepositoryFindCall{Call: call}
+}
+
+// MockItemRepositoryFindCall wrap *gomock.Call
+type MockItemRepositoryFindCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c_2 *MockItemRepositoryFindCall) Return(arg0 *repository.FindItemOutput, arg1 error) *MockItemRepositoryFindCall {
+	c_2.Call = c_2.Call.Return(arg0, arg1)
+	return c_2
+}
+
+// Do rewrite *gomock.Call.Do
+func (c_2 *MockItemRepositoryFindCall) Do(f func(context.Context, *repository.FindItemInput) (*repository.FindItemOutput, error)) *MockItemRepositoryFindCall {
+	c_2.Call = c_2.Call.Do(f)
+	return c_2
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c_2 *MockItemRepositoryFindCall) DoAndReturn(f func(context.Context, *repository.FindItemInput) (*repository.FindItemOutput, error)) *MockItemRepositoryFindCall {
+	c_2.Call = c_2.Call.DoAndReturn(f)
+	return c_2
+}
+
 // Get mocks base method.
 func (m *MockItemRepository) Get(c context.Context, userID, itemID int) (*domain.Item, error) {
 	m.ctrl.T.Helper()

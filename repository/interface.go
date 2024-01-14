@@ -32,6 +32,7 @@ type ItemRepository interface {
 	Get(c context.Context, userID, itemID int) (*domain.Item, error)
 	Delete(c context.Context, userID, itemID int) error
 	Update(c context.Context, userID, itemID int, input *UpdateItemInput) error
+	Find(c context.Context, input *FindItemInput) (*FindItemOutput, error)
 }
 
 type UpdateItemInput struct {
@@ -61,4 +62,17 @@ func (i *UpdateItemInput) Validate() error {
 	}
 
 	return nil
+}
+
+type FindItemInput struct {
+	UserID      int `validate:"required"`
+	Keyword     string
+	SearchAfter int
+}
+
+type FindItemOutput struct {
+	TotalCount  int
+	Items       []domain.Item
+	HasNext     bool
+	SearchAfter int
 }

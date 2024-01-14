@@ -16,6 +16,7 @@ type Usecase interface {
 	Get(c context.Context, input *GetInput) (*GetOutput, error)
 	Delete(c context.Context, input *DeleteInput) error
 	Update(c context.Context, input *UpdateInput) error
+	Find(c context.Context, input *FindInput) (*FindOutput, error)
 }
 
 const ErrNilUsecase domain.ConstantError = "nil ItemUsecase"
@@ -106,4 +107,25 @@ func (i *UpdateInput) Validate() error {
 	}
 
 	return nil
+}
+
+type FindInput struct {
+	User        *domain.User `validate:"required"`
+	Keyword     string
+	SearchAfter int
+}
+
+func (i *FindInput) Validate() error {
+	if err := valid.ValidateStruct(i); err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
+}
+
+type FindOutput struct {
+	TotalCount  int
+	Items       []domain.Item
+	HasNext     bool
+	SearchAfter int
 }

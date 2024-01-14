@@ -178,6 +178,7 @@ func (s *APIServer) initRoutes() {
 	{
 		v1Item := v1.Group("/items", s.AuthMiddleware.Auth())
 		v1Item.POST("/", s.ItemHandler.Create)
+		v1Item.GET("/", s.ItemHandler.Find)
 		v1Item.GET("/:itemId", s.ItemHandler.Get)
 		v1Item.DELETE("/:itemId", s.ItemHandler.Delete)
 		v1Item.PUT("/:itemId", s.ItemHandler.Update)

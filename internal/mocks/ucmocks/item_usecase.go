@@ -117,6 +117,45 @@ func (c_2 *MockItemTokenUsecaseDeleteCall) DoAndReturn(f func(context.Context, *
 	return c_2
 }
 
+// Find mocks base method.
+func (m *MockItemTokenUsecase) Find(c context.Context, input *item.FindInput) (*item.FindOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", c, input)
+	ret0, _ := ret[0].(*item.FindOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockItemTokenUsecaseMockRecorder) Find(c, input any) *MockItemTokenUsecaseFindCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockItemTokenUsecase)(nil).Find), c, input)
+	return &MockItemTokenUsecaseFindCall{Call: call}
+}
+
+// MockItemTokenUsecaseFindCall wrap *gomock.Call
+type MockItemTokenUsecaseFindCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c_2 *MockItemTokenUsecaseFindCall) Return(arg0 *item.FindOutput, arg1 error) *MockItemTokenUsecaseFindCall {
+	c_2.Call = c_2.Call.Return(arg0, arg1)
+	return c_2
+}
+
+// Do rewrite *gomock.Call.Do
+func (c_2 *MockItemTokenUsecaseFindCall) Do(f func(context.Context, *item.FindInput) (*item.FindOutput, error)) *MockItemTokenUsecaseFindCall {
+	c_2.Call = c_2.Call.Do(f)
+	return c_2
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c_2 *MockItemTokenUsecaseFindCall) DoAndReturn(f func(context.Context, *item.FindInput) (*item.FindOutput, error)) *MockItemTokenUsecaseFindCall {
+	c_2.Call = c_2.Call.DoAndReturn(f)
+	return c_2
+}
+
 // Get mocks base method.
 func (m *MockItemTokenUsecase) Get(c context.Context, input *item.GetInput) (*item.GetOutput, error) {
 	m.ctrl.T.Helper()

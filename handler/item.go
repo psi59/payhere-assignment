@@ -226,6 +226,56 @@ func (h *ItemHandler) Update(ginCtx *gin.Context) {
 	ginCtx.Status(http.StatusNoContent)
 }
 
+func (h *ItemHandler) Find(ginCtx *gin.Context) {
+	ctx := ginhelper.GetContext(ginCtx)
+
+	// 1. 인증된 유저 확인
+	user, ok := ctx.Value(domain.CtxKeyUser).(*domain.User)
+	if !ok {
+		ginhelper.Error(ginCtx, errors.New("unauthenticated request"))
+		return
+	}
+
+	var req FindItemRequest
+	if err := ginCtx.BindQuery(&req); err != nil {
+		ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, errors.WithStack(err)))
+		return
+	}
+
+	findOutput, err := h.itemUsecase.Find(ctx, &item.FindInput{
+		User:        user,
+		Keyword:     req.Keyword,
+		SearchAfter: req.SearchAfter,
+	})
+	if err != nil {
+		ginhelper.Error(ginCtx, errors.WithStack(err))
+		return
+	}
+
+	items := make([]GetItemResponse, len(findOutput.Items))
+	for i := 0; i < len(findOutput.Items); i++ {
+		items[i] = GetItemResponse{
+			ID:          findOutput.Items[i].ID,
+			Name:        findOutput.Items[i].Name,
+			Description: findOutput.Items[i].Description,
+			Price:       findOutput.Items[i].Price,
+			Cost:        findOutput.Items[i].Cost,
+			Category:    findOutput.Items[i].Category,
+			Barcode:     findOutput.Items[i].Barcode,
+			Size:        findOutput.Items[i].Size,
+			ExpiryAt:    findOutput.Items[i].ExpiryAt,
+			CreatedAt:   findOutput.Items[i].CreatedAt,
+		}
+	}
+
+	ginhelper.Success(ginCtx, FindItemResponse{
+		TotalCount:  findOutput.TotalCount,
+		Items:       items,
+		HasNext:     findOutput.HasNext,
+		SearchAfter: findOutput.SearchAfter,
+	})
+}
+
 type CreateItemRequest struct {
 	Name        string          `json:"name" validate:"required,gte=1,lte=100"`
 	Description string          `json:"description" validate:"required"`
@@ -283,4 +333,16 @@ func (r *UpdateItemRequest) ShouldUpdate() bool {
 		!valid.IsNil(r.Barcode) ||
 		!valid.IsNil(r.Size) ||
 		!valid.IsNil(r.ExpiryAt)
+}
+
+type FindItemRequest struct {
+	Keyword     string `form:"keyword"`
+	SearchAfter int    `form:"searchAfter"`
+}
+
+type FindItemResponse struct {
+	TotalCount  int               `json:"totalCount"`
+	Items       []GetItemResponse `json:"items"`
+	HasNext     bool              `json:"hasNext"`
+	SearchAfter int               `json:"searchAfter"`
 }
