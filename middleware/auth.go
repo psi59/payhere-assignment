@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/psi59/gopkg/ctxlog"
+
 	"github.com/pkg/errors"
 	"github.com/psi59/payhere-assignment/domain"
 	"github.com/psi59/payhere-assignment/internal/i18n"
@@ -82,6 +84,7 @@ func (a *AuthMiddleware) Auth() gin.HandlerFunc {
 			return
 		}
 		ctx = context.WithValue(ctx, domain.CtxKeyUser, userGetOutput.User)
+		ctxlog.WithInt(ctx, "userID", userGetOutput.User.ID)
 		ginhelper.SetContext(ginCtx, ctx)
 
 		ginCtx.Next()

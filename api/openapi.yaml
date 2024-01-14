@@ -31,10 +31,6 @@ paths:
                 - phoneNumber
                 - password
               properties:
-                name:
-                  description: 회원명
-                  type: string
-                  example: "박상일"
                 phoneNumber:
                   $ref: "#/components/schemas/PhoneNumber"
                 password:
@@ -47,7 +43,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Response"
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 InvalidRequest:
                   $ref: "#/components/examples/InvalidRequest"
@@ -56,7 +52,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Response"
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 UserAlreadyExists:
                   $ref: "#/components/examples/UserAlreadyExists"
@@ -97,7 +93,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Response"
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 InvalidRequest:
                   $ref: "#/components/examples/InvalidRequest"
@@ -108,7 +104,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Response"
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 UserNotFound:
                   $ref: "#/components/examples/UserNotFound"
@@ -135,7 +131,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Response"
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 InvalidRequest:
                   $ref: "#/components/examples/InvalidRequest"
@@ -146,13 +142,114 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Response"
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 UserNotFound:
                   $ref: "#/components/examples/UserNotFound"
         500:
           $ref: "#/components/responses/InternalServerError"
-
+  /v1/items:
+    post:
+      security:
+        - tokenAuth: []
+      tags:
+        - item
+      summary: 아이템 생성
+      description: |
+        아이템을 생성합니다.
+        
+        ### Error case
+        
+        - 인증이 실패했을 경우, `Unauthorized (401)` 에러를 반환합니다.
+        - 잘못된 요청의 경우, `InvalidRequest (400)` 에러를 반환합니다.
+        - 중복된 아이템일 경우, `ItemAlreadyExists (409)` 에러를 반환합니다.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: |
+                    이름
+                    
+                    아이템 이름의 경우 유저별로 유니크한 값이어야 합니다.
+                  minLength: 1
+                  maxLength: 100
+                  uniqueItems: true
+                description:
+                  type: string
+                  description: 설명
+                price:
+                  type: integer
+                  description: 가격
+                  minimum: 1
+                cost:
+                  type: integer
+                  description: 원가
+                  minimum: 1
+                category:
+                  type: string
+                  description: 카테고리
+                  minLength: 1
+                  maxLength: 100
+                barcode:
+                  type: string
+                  description: 바코드 정보
+                  minLength: 1
+                  maxLength: 100
+                size:
+                  $ref: '#/components/schemas/ItemSize'
+                expiryAt:
+                  type: string
+                  description: 유통 기한
+                  format: date-time
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    $ref: "#/components/schemas/ResponseMeta"
+                  data:
+                    $ref: "#/components/schemas/Item"
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                UserNotFound:
+                  $ref: "#/components/examples/InvalidRequest"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                UserNotFound:
+                  $ref: "#/components/examples/Unauthorized"
+        409:
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                UserNotFound:
+                  $ref: "#/components/examples/ItemAlreadyExists"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+  /v1/items/{itemId}:
+    get:
+      tags:
+        - item
 components:
   securitySchemes:
     tokenAuth:
@@ -168,11 +265,60 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Response"
+            $ref: "#/components/schemas/ErrorResponse"
           examples:
             UserAlreadyExists:
               $ref: "#/components/examples/InternalServerError"
   schemas:
+    Item:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: 아이템 아이디
+          example: 1
+        name:
+          type: string
+          description: 이름
+          example: '슈크림 라떼'
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          description: 설명
+          example: |
+            슈크림 라떼는, 달콤하고, 달콤하고, 달콤하다. 한 모금만으로도 당 충전이 가능할 정도다. 바닐라 라떼와 비슷해 보이지만 커피의 맛이 연하고, 바닐라의 풍미와 단맛을 한껏 끌어올렸다는 점에서 차이가 있다. 바닐라 라떼가 씁쓸하고 달콤한 커피를 마시는 느낌이라면, 슈크림 라떼는 커피보다는 바닐라 음료를 마시는 느낌이다.
+        price:
+          type: integer
+          description: 가격
+          example: 7000
+          minimum: 1
+        cost:
+          type: integer
+          description: 원가
+          example: 5000
+          minimum: 1
+        category:
+          type: string
+          description: 카테고리
+          example: 'coffee'
+          minLength: 1
+          maxLength: 100
+        barcode:
+          type: string
+          description: 바코드 정보
+          example: '0123456789012'
+          minLength: 1
+          maxLength: 100
+        size:
+          $ref: '#/components/schemas/ItemSize'
+        expiryAt:
+          type: string
+          description: 유통기한
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
     PhoneNumber:
       description: |
         휴대 전화 번호
@@ -180,6 +326,8 @@ components:
         전화번호는 고유해야 하며 하이픈 없이 숫자로만 구성되어야 합니다.
       type: string
       uniqueItems: true
+      minLength: 12
+      maxLength: 13
       example: "01043218765"
       pattern: '^01\d{8,9}$'
     Password:
@@ -192,15 +340,21 @@ components:
         - 특수문자를 반드시 1자 이상 포함하여야 합니다.
           - 공백을 포함한 허용된 특수문자는 다음과 같습니다. `!@#$%&*+-_=?:;,.|(){}<> `
       type: string
-      example: Test1!
-    Response:
+      minLength: 8
+      maxLength: 72
+      example: SangIl1!
+    ItemSize:
+      type: string
+      description: 사이즈
+      enum:
+        - small
+        - large
+
+    ErrorResponse:
       type: object
       properties:
         meta:
           $ref: "#/components/schemas/ResponseMeta"
-        data:
-          type: object
-          additionalProperties: true
 
     ResponseMeta:
       type: object
@@ -208,33 +362,51 @@ components:
         code:
           type: integer
           description: 응답 상태 코드
+          example: 200
         message:
           type: string
           description: 응답 메시지
+          example: ok
 
   examples:
-    InternalServerError:
-      value:
-        meta:
-          code: 500
-          message: The server encountered an internal error. Please retry the request.
     InvalidRequest:
       value:
         meta:
           code: 400
           message: The request is not valid.
+
     PasswordMismatch:
       value:
         meta:
           code: 400
           message: Password does not match.
+
+    Unauthorized:
+      value:
+        meta:
+          code: 401
+          message: Server failed to authenticate the request.
+
     UserNotFound:
       value:
         meta:
           code: 404
           message: The specified user doesn't exist.
+
     UserAlreadyExists:
       value:
         meta:
           code: 409
           message: The specified user already exists.
+
+    ItemAlreadyExists:
+      value:
+        meta:
+          code: 409
+          message: The specified item already exists.
+
+    InternalServerError:
+      value:
+        meta:
+          code: 500
+          message: The server encountered an internal error. Please retry the request.

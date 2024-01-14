@@ -88,7 +88,6 @@ func TestAuthMiddleware_Auth(t *testing.T) {
 	})
 
 	userDomain, err := domain.NewUser(
-		gofakeit.Name(),
 		gofakeit.Regex(`^01\d{8,9}$`),
 		gofakeit.Password(true, true, true, true, true, 10),
 		gofakeit.Date(),
@@ -146,7 +145,7 @@ func TestAuthMiddleware_Auth(t *testing.T) {
 	t.Run("토큰 검증 시 알 수 없는 에러 발생", func(t *testing.T) {
 		authTokenUsecase.EXPECT().Verify(gomock.Any(), &authtoken.VerifyInput{
 			Token: token,
-		}).Return(nil, domain.ErrExpiredToken)
+		}).Return(nil, gofakeit.Error())
 
 		responseWriter := httptest.NewRecorder()
 		r.ServeHTTP(responseWriter, httpRequest)

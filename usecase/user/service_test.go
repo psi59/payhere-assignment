@@ -28,7 +28,6 @@ func TestService_Create(t *testing.T) {
 			return nil
 		})
 		input := &CreateInput{
-			Name:        gofakeit.Name(),
 			PhoneNumber: gofakeit.Regex(`^01\d{8,9}$`),
 			Password:    gofakeit.Password(true, true, true, true, true, 10),
 		}
@@ -47,7 +46,6 @@ func TestService_Create(t *testing.T) {
 		require.NoError(t, err)
 
 		input := &CreateInput{
-			Name:        gofakeit.Name(),
 			PhoneNumber: gofakeit.Regex(`^01\d{8,9}$`),
 			Password:    gofakeit.Password(true, true, true, true, true, 10),
 		}
@@ -65,7 +63,6 @@ func TestService_Create(t *testing.T) {
 		require.NoError(t, err)
 
 		input := &CreateInput{
-			Name:        gofakeit.Name(),
 			PhoneNumber: gofakeit.Regex(`^01\d{8,9}$`),
 			Password:    gofakeit.Password(true, true, false, true, true, 10),
 		}
@@ -83,7 +80,6 @@ func TestService_Create(t *testing.T) {
 		require.NoError(t, err)
 
 		input := &CreateInput{
-			Name:        gofakeit.Name(),
 			PhoneNumber: gofakeit.Regex(`^01\d{8,9}$`),
 			Password:    gofakeit.Password(true, true, false, true, true, 10),
 		}
@@ -104,7 +100,6 @@ func TestService_Create(t *testing.T) {
 			return gofakeit.Error()
 		})
 		input := &CreateInput{
-			Name:        gofakeit.Name(),
 			PhoneNumber: gofakeit.Regex(`^01\d{8,9}$`),
 			Password:    gofakeit.Password(true, true, true, true, true, 10),
 		}
@@ -126,7 +121,6 @@ func TestService_Get(t *testing.T) {
 		require.NoError(t, err)
 
 		user, err := domain.NewUser(
-			gofakeit.Name(),
 			gofakeit.Regex(`^01\d{8,9}$`),
 			gofakeit.Password(true, true, true, true, true, 10),
 			time.Unix(time.Now().Unix(), 0).UTC(),
@@ -153,7 +147,6 @@ func TestService_Get(t *testing.T) {
 		require.NoError(t, err)
 
 		user, err := domain.NewUser(
-			gofakeit.Name(),
 			gofakeit.Regex(`^01\d{8,9}$`),
 			gofakeit.Password(true, true, true, true, true, 10),
 			time.Unix(time.Now().Unix(), 0).UTC(),
@@ -204,7 +197,6 @@ func TestService_Get(t *testing.T) {
 		require.NoError(t, err)
 
 		user, err := domain.NewUser(
-			gofakeit.Name(),
 			gofakeit.Regex(`^01\d{8,9}$`),
 			gofakeit.Password(true, true, true, true, true, 10),
 			time.Unix(time.Now().Unix(), 0).UTC(),
@@ -232,7 +224,6 @@ func TestService_GetByPhoneNumber(t *testing.T) {
 		require.NoError(t, err)
 
 		user, err := domain.NewUser(
-			gofakeit.Name(),
 			gofakeit.Regex(`^01\d{8,9}$`),
 			gofakeit.Password(true, true, true, true, true, 10),
 			time.Unix(time.Now().Unix(), 0).UTC(),
@@ -258,7 +249,6 @@ func TestService_GetByPhoneNumber(t *testing.T) {
 		require.NoError(t, err)
 
 		user, err := domain.NewUser(
-			gofakeit.Name(),
 			gofakeit.Regex(`^01\d{8,9}$`),
 			gofakeit.Password(true, true, true, true, true, 10),
 			time.Unix(time.Now().Unix(), 0).UTC(),
@@ -308,7 +298,6 @@ func TestService_GetByPhoneNumber(t *testing.T) {
 		require.NoError(t, err)
 
 		user, err := domain.NewUser(
-			gofakeit.Name(),
 			gofakeit.Regex(`^01\d{8,9}$`),
 			gofakeit.Password(true, true, true, true, true, 10),
 			time.Unix(time.Now().Unix(), 0).UTC(),

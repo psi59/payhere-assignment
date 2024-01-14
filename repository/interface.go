@@ -7,8 +7,9 @@ import (
 )
 
 const (
-	ErrNilUserRepository        domain.ConstantError = "nil UserRepository"
-	ErrTokenBlacklistRepository domain.ConstantError = "nil TokenBlacklistRepository"
+	ErrNilUserRepository           domain.ConstantError = "nil UserRepository"
+	ErrNilTokenBlacklistRepository domain.ConstantError = "nil TokenBlacklistRepository"
+	ErrNilItemRepository           domain.ConstantError = "nil ItemRepository"
 )
 
 type UserRepository interface {
@@ -20,4 +21,9 @@ type UserRepository interface {
 type TokenBlacklistRepository interface {
 	Create(c context.Context, token *domain.AuthToken) error
 	Get(c context.Context, token string) (*domain.AuthToken, error)
+}
+
+type ItemRepository interface {
+	Create(c context.Context, item *domain.Item) error
+	Get(c context.Context, userID, itemID int) (*domain.Item, error)
 }

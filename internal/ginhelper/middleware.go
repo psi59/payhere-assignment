@@ -1,4 +1,4 @@
-package middleware
+package ginhelper
 
 import (
 	"errors"
@@ -8,24 +8,23 @@ import (
 	"github.com/gin-contrib/requestid"
 	"github.com/gin-gonic/gin"
 	"github.com/psi59/gopkg/ctxlog"
-	"github.com/psi59/payhere-assignment/internal/ginhelper"
 	"github.com/psi59/payhere-assignment/internal/valid"
 	"github.com/rs/zerolog"
 )
 
-func SetContext() gin.HandlerFunc {
+func ContextMiddleware() gin.HandlerFunc {
 	return func(ginCtx *gin.Context) {
-		ginhelper.SetContext(ginCtx, ginCtx)
+		SetContext(ginCtx, ginCtx)
 		ginCtx.Next()
 	}
 }
 
-func Logger() gin.HandlerFunc {
+func LoggerMiddleware() gin.HandlerFunc {
 	return func(ginCtx *gin.Context) {
-		ctx := ginhelper.GetContext(ginCtx)
+		ctx := GetContext(ginCtx)
 		req := ginCtx.Request
 		ctx = ctxlog.WithLogger(ctx)
-		ginhelper.SetContext(ginCtx, ctx)
+		SetContext(ginCtx, ctx)
 		t := time.Now()
 
 		var lf logFields
@@ -60,7 +59,7 @@ func Logger() gin.HandlerFunc {
 		}
 
 		handlerErr = ginCtx.Errors.Last().Err
-		var httpError *ginhelper.HTTPError
+		var httpError *HTTPError
 		if !errors.As(handlerErr, &httpError) {
 			logLevel = zerolog.ErrorLevel
 			return

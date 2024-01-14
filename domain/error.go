@@ -1,15 +1,17 @@
 package domain
 
 const (
-	ErrNilContext               ConstantError = "nil Context"
-	ErrNilInput                 ConstantError = "nil Input"
-	ErrExpiredToken             ConstantError = "ExpiredToken"
-	ErrUserNotFound             ConstantError = "UserNotFound"
-	ErrTokenBlacklistNotFound   ConstantError = "TokenBlacklistNotFound"
-	ErrInvalidRequest           ConstantError = "InvalidRequest"
-	ErrPasswordMismatch         ConstantError = "PasswordMismatch"
-	ErrDuplicatedUser           ConstantError = "DuplicatedUser"
-	ErrDuplicatedTokenBlacklist ConstantError = "DuplicatedTokenBlacklist"
+	ErrNilContext                  ConstantError = "nil Context"
+	ErrNilInput                    ConstantError = "nil Input"
+	ErrInvalidRequest              ConstantError = "InvalidRequest"
+	ErrExpiredToken                ConstantError = "ExpiredToken"
+	ErrUserNotFound                ConstantError = "UserNotFound"
+	ErrItemNotFound                ConstantError = "ItemNotFound"
+	ErrTokenBlacklistNotFound      ConstantError = "TokenBlacklistNotFound"
+	ErrPasswordMismatch            ConstantError = "PasswordMismatch"
+	ErrUserAlreadyExists           ConstantError = "UserAlreadyExists"
+	ErrTokenBlacklistAlreadyExists ConstantError = "TokenBlacklistAlreadyExists"
+	ErrItemAlreadyExists           ConstantError = "ItemAlreadyExists"
 )
 
 type ConstantError string

@@ -154,8 +154,8 @@ func (s *APIServer) initRoutes() {
 	v1 := engine.Group("/v1")
 	v1.Use(
 		requestid.New(),
-		middleware.SetContext(),
-		middleware.Logger(),
+		ginhelper.ContextMiddleware(),
+		ginhelper.LoggerMiddleware(),
 		func(c *gin.Context) {
 			ctx := ginhelper.GetContext(c)
 			ctx = db.ContextWithConn(ctx, s.dbConn)

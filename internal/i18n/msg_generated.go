@@ -7,6 +7,7 @@ const (
 	InternalError               = "InternalError"
 	InvalidRequest              = "InvalidRequest"
 	ItemAccessDenied            = "ItemAccessDenied"
+	ItemAlreadyExists           = "ItemAlreadyExists"
 	ItemNotFound                = "ItemNotFound"
 	NotFound                    = "NotFound"
 	PasswordMismatch            = "PasswordMismatch"

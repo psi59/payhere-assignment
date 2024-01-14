@@ -255,3 +255,162 @@ func (c_2 *MockTokenBlacklistRepositoryGetCall) DoAndReturn(f func(context.Conte
 	c_2.Call = c_2.Call.DoAndReturn(f)
 	return c_2
 }
+
+// MockItemCategoryRepository is a mock of ItemCategoryRepository interface.
+type MockItemCategoryRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockItemCategoryRepositoryMockRecorder
+}
+
+// MockItemCategoryRepositoryMockRecorder is the mock recorder for MockItemCategoryRepository.
+type MockItemCategoryRepositoryMockRecorder struct {
+	mock *MockItemCategoryRepository
+}
+
+// NewMockItemCategoryRepository creates a new mock instance.
+func NewMockItemCategoryRepository(ctrl *gomock.Controller) *MockItemCategoryRepository {
+	mock := &MockItemCategoryRepository{ctrl: ctrl}
+	mock.recorder = &MockItemCategoryRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockItemCategoryRepository) EXPECT() *MockItemCategoryRepositoryMockRecorder {
+	return m.recorder
+}
+
+// Create mocks base method.
+func (m *MockItemCategoryRepository) Create(c context.Context) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Create", c)
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockItemCategoryRepositoryMockRecorder) Create(c any) *MockItemCategoryRepositoryCreateCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockItemCategoryRepository)(nil).Create), c)
+	return &MockItemCategoryRepositoryCreateCall{Call: call}
+}
+
+// MockItemCategoryRepositoryCreateCall wrap *gomock.Call
+type MockItemCategoryRepositoryCreateCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c_2 *MockItemCategoryRepositoryCreateCall) Return() *MockItemCategoryRepositoryCreateCall {
+	c_2.Call = c_2.Call.Return()
+	return c_2
+}
+
+// Do rewrite *gomock.Call.Do
+func (c_2 *MockItemCategoryRepositoryCreateCall) Do(f func(context.Context)) *MockItemCategoryRepositoryCreateCall {
+	c_2.Call = c_2.Call.Do(f)
+	return c_2
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c_2 *MockItemCategoryRepositoryCreateCall) DoAndReturn(f func(context.Context)) *MockItemCategoryRepositoryCreateCall {
+	c_2.Call = c_2.Call.DoAndReturn(f)
+	return c_2
+}
+
+// MockItemRepository is a mock of ItemRepository interface.
+type MockItemRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockItemRepositoryMockRecorder
+}
+
+// MockItemRepositoryMockRecorder is the mock recorder for MockItemRepository.
+type MockItemRepositoryMockRecorder struct {
+	mock *MockItemRepository
+}
+
+// NewMockItemRepository creates a new mock instance.
+func NewMockItemRepository(ctrl *gomock.Controller) *MockItemRepository {
+	mock := &MockItemRepository{ctrl: ctrl}
+	mock.recorder = &MockItemRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockItemRepository) EXPECT() *MockItemRepositoryMockRecorder {
+	return m.recorder
+}
+
+// Create mocks base method.
+func (m *MockItemRepository) Create(c context.Context, item *domain.Item) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", c, item)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockItemRepositoryMockRecorder) Create(c, item any) *MockItemRepositoryCreateCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockItemRepository)(nil).Create), c, item)
+	return &MockItemRepositoryCreateCall{Call: call}
+}
+
+// MockItemRepositoryCreateCall wrap *gomock.Call
+type MockItemRepositoryCreateCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c_2 *MockItemRepositoryCreateCall) Return(arg0 error) *MockItemRepositoryCreateCall {
+	c_2.Call = c_2.Call.Return(arg0)
+	return c_2
+}
+
+// Do rewrite *gomock.Call.Do
+func (c_2 *MockItemRepositoryCreateCall) Do(f func(context.Context, *domain.Item) error) *MockItemRepositoryCreateCall {
+	c_2.Call = c_2.Call.Do(f)
+	return c_2
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c_2 *MockItemRepositoryCreateCall) DoAndReturn(f func(context.Context, *domain.Item) error) *MockItemRepositoryCreateCall {
+	c_2.Call = c_2.Call.DoAndReturn(f)
+	return c_2
+}
+
+// Get mocks base method.
+func (m *MockItemRepository) Get(c context.Context, userID, itemID int) (*domain.Item, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", c, userID, itemID)
+	ret0, _ := ret[0].(*domain.Item)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockItemRepositoryMockRecorder) Get(c, userID, itemID any) *MockItemRepositoryGetCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockItemRepository)(nil).Get), c, userID, itemID)
+	return &MockItemRepositoryGetCall{Call: call}
+}
+
+// MockItemRepositoryGetCall wrap *gomock.Call
+type MockItemRepositoryGetCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c_2 *MockItemRepositoryGetCall) Return(arg0 *domain.Item, arg1 error) *MockItemRepositoryGetCall {
+	c_2.Call = c_2.Call.Return(arg0, arg1)
+	return c_2
+}
+
+// Do rewrite *gomock.Call.Do
+func (c_2 *MockItemRepositoryGetCall) Do(f func(context.Context, int, int) (*domain.Item, error)) *MockItemRepositoryGetCall {
+	c_2.Call = c_2.Call.Do(f)
+	return c_2
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c_2 *MockItemRepositoryGetCall) DoAndReturn(f func(context.Context, int, int) (*domain.Item, error)) *MockItemRepositoryGetCall {
+	c_2.Call = c_2.Call.DoAndReturn(f)
+	return c_2
+}

@@ -29,7 +29,7 @@ func TestNewUser(t *testing.T) {
 			args: args{
 				phoneNumber: "01012341234",
 				name:        gofakeit.Name(),
-				password:    gofakeit.Password(true, true, true, true, true, 10),
+				password:    gofakeit.Password(true, true, true, true, true, 72),
 				createdAt:   now,
 			},
 			wantErr: false,
@@ -65,6 +65,16 @@ func TestNewUser(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name: "invalid password",
+			args: args{
+				phoneNumber: "01012341234",
+				name:        gofakeit.Name(),
+				password:    gofakeit.Password(true, true, true, true, true, 73),
+				createdAt:   now,
+			},
+			wantErr: true,
+		},
+		{
 			name: "zero createdAt",
 			args: args{
 				phoneNumber: "01012341234",
@@ -77,10 +87,11 @@ func TestNewUser(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewUser(tt.args.name, tt.args.phoneNumber, tt.args.password, tt.args.createdAt)
+			got, err := NewUser(tt.args.phoneNumber, tt.args.password, tt.args.createdAt)
 			if tt.wantErr {
 				require.Error(t, err)
-				return
+				require.Nil(t, got)
+				t.Logf("error: %v", err)
 			} else {
 				require.NoError(t, err)
 				require.NotNil(t, got)
@@ -168,7 +179,6 @@ func TestUser_Validate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			u := &User{
 				ID:          tt.fields.ID,
-				Name:        tt.fields.Name,
 				PhoneNumber: tt.fields.PhoneNumber,
 				Password:    tt.fields.Password,
 				CreatedAt:   tt.fields.CreatedAt,
