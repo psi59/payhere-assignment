@@ -256,65 +256,6 @@ func (c_2 *MockTokenBlacklistRepositoryGetCall) DoAndReturn(f func(context.Conte
 	return c_2
 }
 
-// MockItemCategoryRepository is a mock of ItemCategoryRepository interface.
-type MockItemCategoryRepository struct {
-	ctrl     *gomock.Controller
-	recorder *MockItemCategoryRepositoryMockRecorder
-}
-
-// MockItemCategoryRepositoryMockRecorder is the mock recorder for MockItemCategoryRepository.
-type MockItemCategoryRepositoryMockRecorder struct {
-	mock *MockItemCategoryRepository
-}
-
-// NewMockItemCategoryRepository creates a new mock instance.
-func NewMockItemCategoryRepository(ctrl *gomock.Controller) *MockItemCategoryRepository {
-	mock := &MockItemCategoryRepository{ctrl: ctrl}
-	mock.recorder = &MockItemCategoryRepositoryMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockItemCategoryRepository) EXPECT() *MockItemCategoryRepositoryMockRecorder {
-	return m.recorder
-}
-
-// Create mocks base method.
-func (m *MockItemCategoryRepository) Create(c context.Context) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Create", c)
-}
-
-// Create indicates an expected call of Create.
-func (mr *MockItemCategoryRepositoryMockRecorder) Create(c any) *MockItemCategoryRepositoryCreateCall {
-	mr.mock.ctrl.T.Helper()
-	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockItemCategoryRepository)(nil).Create), c)
-	return &MockItemCategoryRepositoryCreateCall{Call: call}
-}
-
-// MockItemCategoryRepositoryCreateCall wrap *gomock.Call
-type MockItemCategoryRepositoryCreateCall struct {
-	*gomock.Call
-}
-
-// Return rewrite *gomock.Call.Return
-func (c_2 *MockItemCategoryRepositoryCreateCall) Return() *MockItemCategoryRepositoryCreateCall {
-	c_2.Call = c_2.Call.Return()
-	return c_2
-}
-
-// Do rewrite *gomock.Call.Do
-func (c_2 *MockItemCategoryRepositoryCreateCall) Do(f func(context.Context)) *MockItemCategoryRepositoryCreateCall {
-	c_2.Call = c_2.Call.Do(f)
-	return c_2
-}
-
-// DoAndReturn rewrite *gomock.Call.DoAndReturn
-func (c_2 *MockItemCategoryRepositoryCreateCall) DoAndReturn(f func(context.Context)) *MockItemCategoryRepositoryCreateCall {
-	c_2.Call = c_2.Call.DoAndReturn(f)
-	return c_2
-}
-
 // MockItemRepository is a mock of ItemRepository interface.
 type MockItemRepository struct {
 	ctrl     *gomock.Controller
@@ -372,6 +313,44 @@ func (c_2 *MockItemRepositoryCreateCall) Do(f func(context.Context, *domain.Item
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
 func (c_2 *MockItemRepositoryCreateCall) DoAndReturn(f func(context.Context, *domain.Item) error) *MockItemRepositoryCreateCall {
+	c_2.Call = c_2.Call.DoAndReturn(f)
+	return c_2
+}
+
+// Delete mocks base method.
+func (m *MockItemRepository) Delete(c context.Context, userID, itemID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", c, userID, itemID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockItemRepositoryMockRecorder) Delete(c, userID, itemID any) *MockItemRepositoryDeleteCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockItemRepository)(nil).Delete), c, userID, itemID)
+	return &MockItemRepositoryDeleteCall{Call: call}
+}
+
+// MockItemRepositoryDeleteCall wrap *gomock.Call
+type MockItemRepositoryDeleteCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c_2 *MockItemRepositoryDeleteCall) Return(arg0 error) *MockItemRepositoryDeleteCall {
+	c_2.Call = c_2.Call.Return(arg0)
+	return c_2
+}
+
+// Do rewrite *gomock.Call.Do
+func (c_2 *MockItemRepositoryDeleteCall) Do(f func(context.Context, int, int) error) *MockItemRepositoryDeleteCall {
+	c_2.Call = c_2.Call.Do(f)
+	return c_2
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c_2 *MockItemRepositoryDeleteCall) DoAndReturn(f func(context.Context, int, int) error) *MockItemRepositoryDeleteCall {
 	c_2.Call = c_2.Call.DoAndReturn(f)
 	return c_2
 }

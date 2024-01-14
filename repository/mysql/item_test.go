@@ -120,6 +120,47 @@ func TestItemRepository_Get(t *testing.T) {
 	})
 }
 
+func TestItemRepository_Delete(t *testing.T) {
+	ctx := db.ContextWithConn(context.TODO(), conn)
+	userRepo := NewUserRepository()
+	user := newTestUser(t)
+	err := userRepo.Create(ctx, user)
+	assert.NoError(t, err)
+	itemRepo := NewItemRepository()
+	item := newTestItem(t, user.ID)
+	err = itemRepo.Create(ctx, item)
+	assert.NoError(t, err)
+
+	t.Run("OK", func(t *testing.T) {
+		err := itemRepo.Delete(ctx, item.UserID, item.ID)
+		assert.NoError(t, err)
+	})
+
+	t.Run("nil context", func(t *testing.T) {
+		err := itemRepo.Delete(nil, item.UserID, item.ID)
+		assert.Error(t, err)
+
+	})
+
+	t.Run("invalid userID", func(t *testing.T) {
+		err := itemRepo.Delete(ctx, 0, item.ID)
+		assert.Error(t, err)
+
+	})
+
+	t.Run("invalid itemID", func(t *testing.T) {
+		err := itemRepo.Delete(ctx, item.UserID, 0)
+		assert.Error(t, err)
+
+	})
+
+	t.Run("context without conn", func(t *testing.T) {
+		err := itemRepo.Delete(context.TODO(), item.UserID, item.ID)
+		assert.Error(t, err)
+
+	})
+}
+
 func newTestItem(t *testing.T, userID int) *domain.Item {
 	item, err := domain.NewItem(
 		userID,

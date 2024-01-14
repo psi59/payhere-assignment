@@ -13,6 +13,7 @@ import (
 type Usecase interface {
 	Create(c context.Context, input *CreateInput) (*CreateOutput, error)
 	Get(c context.Context, input *GetInput) (*GetOutput, error)
+	Delete(c context.Context, input *DeleteInput) error
 }
 
 const ErrNilUsecase domain.ConstantError = "nil ItemUsecase"
@@ -59,4 +60,17 @@ func (i *GetInput) Validate() error {
 
 type GetOutput struct {
 	Item *domain.Item
+}
+
+type DeleteInput struct {
+	User   *domain.User `validate:"required"`
+	ItemID int          `validate:"required"`
+}
+
+func (i *DeleteInput) Validate() error {
+	if err := valid.ValidateStruct(i); err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
 }

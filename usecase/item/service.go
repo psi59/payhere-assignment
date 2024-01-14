@@ -86,3 +86,32 @@ func (s *Service) Get(c context.Context, input *GetInput) (*GetOutput, error) {
 	// 3. 결과 반환
 	return &GetOutput{Item: item}, nil
 }
+
+func (s *Service) Delete(c context.Context, input *DeleteInput) error {
+	// 1. 파라메터 체크
+	switch {
+	case valid.IsNil(c):
+		return domain.ErrNilContext
+	case valid.IsNil(input):
+		return domain.ErrNilInput
+	}
+	if err := input.Validate(); err != nil {
+		return errors.WithStack(err)
+	}
+
+	user := input.User
+
+	// 2. 아이템 조회
+	item, err := s.itemRepository.Get(c, user.ID, input.ItemID)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	// 3. 아이템 삭제
+	if err := s.itemRepository.Delete(c, item.UserID, item.ID); err != nil {
+		return errors.WithStack(err)
+	}
+
+	// 3. 결과 반환
+	return nil
+}

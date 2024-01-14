@@ -137,6 +137,36 @@ func (h *ItemHandler) Get(ginCtx *gin.Context) {
 	})
 }
 
+func (h *ItemHandler) Delete(ginCtx *gin.Context) {
+	ctx := ginhelper.GetContext(ginCtx)
+
+	// 1. 인증된 유저 확인
+	user, ok := ctx.Value(domain.CtxKeyUser).(*domain.User)
+	if !ok {
+		ginhelper.Error(ginCtx, errors.New("unauthenticated request"))
+		return
+	}
+
+	itemIDParam := ginCtx.Param("itemId")
+	itemID, err := strconv.Atoi(itemIDParam)
+	if err != nil {
+		ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusNotFound, i18n.ItemNotFound, errors.WithStack(err)))
+		return
+	}
+
+	if err := h.itemUsecase.Delete(ctx, &item.DeleteInput{User: user, ItemID: itemID}); err != nil {
+		if errors.Is(err, domain.ErrItemNotFound) {
+			ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusNotFound, i18n.ItemNotFound, errors.WithStack(err)))
+			return
+		}
+
+		ginhelper.Error(ginCtx, errors.WithStack(err))
+		return
+	}
+
+	ginCtx.Status(http.StatusNoContent)
+}
+
 type CreateItemRequest struct {
 	Name        string          `json:"name" validate:"required,gte=1,lte=100"`
 	Description string          `json:"description" validate:"required"`

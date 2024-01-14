@@ -91,6 +91,28 @@ func (r *ItemRepository) Get(c context.Context, userID, itemID int) (*domain.Ite
 	return record.Domain(), nil
 }
 
+func (r *ItemRepository) Delete(c context.Context, userID, itemID int) error {
+	switch {
+	case valid.IsNil(c):
+		return domain.ErrNilContext
+	case userID < 1:
+		return fmt.Errorf("invalid userID: %d", userID)
+	case itemID < 1:
+		return fmt.Errorf("invalid itemID: %d", itemID)
+	}
+	conn, err := db.ConnFromContext(c)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	var record Item
+	if err := conn.Where("user_id=?", userID).Where("item_id=?", itemID).Delete(&record).Error; err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
+}
+
 type Item struct {
 	ItemID      int             `gorm:"item_id;primaryKey"`
 	UserID      int             `gorm:"user_id"`

@@ -79,6 +79,44 @@ func (c_2 *MockItemTokenUsecaseCreateCall) DoAndReturn(f func(context.Context, *
 	return c_2
 }
 
+// Delete mocks base method.
+func (m *MockItemTokenUsecase) Delete(c context.Context, input *item.DeleteInput) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", c, input)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockItemTokenUsecaseMockRecorder) Delete(c, input any) *MockItemTokenUsecaseDeleteCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockItemTokenUsecase)(nil).Delete), c, input)
+	return &MockItemTokenUsecaseDeleteCall{Call: call}
+}
+
+// MockItemTokenUsecaseDeleteCall wrap *gomock.Call
+type MockItemTokenUsecaseDeleteCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c_2 *MockItemTokenUsecaseDeleteCall) Return(arg0 error) *MockItemTokenUsecaseDeleteCall {
+	c_2.Call = c_2.Call.Return(arg0)
+	return c_2
+}
+
+// Do rewrite *gomock.Call.Do
+func (c_2 *MockItemTokenUsecaseDeleteCall) Do(f func(context.Context, *item.DeleteInput) error) *MockItemTokenUsecaseDeleteCall {
+	c_2.Call = c_2.Call.Do(f)
+	return c_2
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c_2 *MockItemTokenUsecaseDeleteCall) DoAndReturn(f func(context.Context, *item.DeleteInput) error) *MockItemTokenUsecaseDeleteCall {
+	c_2.Call = c_2.Call.DoAndReturn(f)
+	return c_2
+}
+
 // Get mocks base method.
 func (m *MockItemTokenUsecase) Get(c context.Context, input *item.GetInput) (*item.GetOutput, error) {
 	m.ctrl.T.Helper()

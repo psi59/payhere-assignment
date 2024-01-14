@@ -218,6 +218,75 @@ func TestService_Get(t *testing.T) {
 	})
 }
 
+func TestService_Delete(t *testing.T) {
+	ctx := context.TODO()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	itemRepository := repomocks.NewMockItemRepository(ctrl)
+	srv, err := NewService(itemRepository)
+	assert.NoError(t, err)
+
+	t.Run("OK", func(t *testing.T) {
+		item := newTestItem(t, userDomain.ID)
+		itemRepository.EXPECT().Get(ctx, userDomain.ID, item.ID).Return(item, nil)
+		itemRepository.EXPECT().Delete(ctx, userDomain.ID, item.ID).Return(nil)
+		input := &DeleteInput{
+			User:   userDomain,
+			ItemID: item.ID,
+		}
+		err := srv.Delete(ctx, input)
+		assert.NoError(t, err)
+	})
+
+	t.Run("nil context", func(t *testing.T) {
+		item := newTestItem(t, userDomain.ID)
+		input := &DeleteInput{
+			User:   userDomain,
+			ItemID: item.ID,
+		}
+		err := srv.Delete(nil, input)
+		assert.Error(t, err)
+	})
+
+	t.Run("nil input", func(t *testing.T) {
+		err := srv.Delete(ctx, nil)
+		assert.Error(t, err)
+	})
+
+	t.Run("invalid input", func(t *testing.T) {
+		input := &DeleteInput{
+			User:   userDomain,
+			ItemID: 0,
+		}
+		err := srv.Delete(ctx, input)
+		assert.Error(t, err)
+	})
+
+	t.Run("item not found", func(t *testing.T) {
+		item := newTestItem(t, userDomain.ID)
+		itemRepository.EXPECT().Get(ctx, userDomain.ID, item.ID).Return(nil, domain.ErrItemNotFound)
+		input := &DeleteInput{
+			User:   userDomain,
+			ItemID: item.ID,
+		}
+		err := srv.Delete(ctx, input)
+		assert.Error(t, err)
+	})
+
+	t.Run("아이템 삭제 에러", func(t *testing.T) {
+		item := newTestItem(t, userDomain.ID)
+		itemRepository.EXPECT().Get(ctx, userDomain.ID, item.ID).Return(item, nil)
+		itemRepository.EXPECT().Delete(ctx, userDomain.ID, item.ID).Return(gofakeit.Error())
+		input := &DeleteInput{
+			User:   userDomain,
+			ItemID: item.ID,
+		}
+		err := srv.Delete(ctx, input)
+		assert.Error(t, err)
+	})
+}
+
 func newTestItem(t *testing.T, userID int) *domain.Item {
 	item := &domain.Item{
 		ID:          gofakeit.Number(1, 10000),

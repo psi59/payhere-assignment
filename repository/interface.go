@@ -26,4 +26,5 @@ type TokenBlacklistRepository interface {
 type ItemRepository interface {
 	Create(c context.Context, item *domain.Item) error
 	Get(c context.Context, userID, itemID int) (*domain.Item, error)
+	Delete(c context.Context, userID, itemID int) error
 }

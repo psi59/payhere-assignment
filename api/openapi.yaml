@@ -247,9 +247,78 @@ paths:
         500:
           $ref: "#/components/responses/InternalServerError"
   /v1/items/{itemId}:
+    parameters:
+      - name: itemId
+        in: path
+        required: true
+        example: 1202
+        description: 아이템 아이디
+        schema:
+          type: integer
     get:
       tags:
         - item
+      summary: 아이템 상세 조회
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    $ref: "#/components/schemas/ResponseMeta"
+                  data:
+                    $ref: "#/components/schemas/Item"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                UserNotFound:
+                  $ref: "#/components/examples/Unauthorized"
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                UserNotFound:
+                  $ref: "#/components/examples/ItemNotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+    delete:
+      tags:
+        - item
+      summary: 아이템 삭제
+      responses:
+        204:
+          description: OK
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                UserNotFound:
+                  $ref: "#/components/examples/Unauthorized"
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                UserNotFound:
+                  $ref: "#/components/examples/ItemNotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
 components:
   securitySchemes:
     tokenAuth:
@@ -392,6 +461,12 @@ components:
         meta:
           code: 404
           message: The specified user doesn't exist.
+
+    ItemNotFound:
+      value:
+        meta:
+          code: 404
+          message: The specified item doesn't exist.
 
     UserAlreadyExists:
       value:
