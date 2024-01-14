@@ -115,3 +115,42 @@ func (s *Service) Delete(c context.Context, input *DeleteInput) error {
 	// 3. 결과 반환
 	return nil
 }
+
+func (s *Service) Update(c context.Context, input *UpdateInput) error {
+	// 1. 파라메터 체크
+	switch {
+	case valid.IsNil(c):
+		return domain.ErrNilContext
+	case valid.IsNil(input):
+		return domain.ErrNilInput
+	}
+	if err := input.Validate(); err != nil {
+		return errors.WithStack(err)
+	}
+
+	user := input.User
+
+	// 2. 아이템 조회
+	item, err := s.itemRepository.Get(c, user.ID, input.ItemID)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	// 3. 아이템 수정
+	param := &repository.UpdateItemInput{
+		Name:        input.Name,
+		Description: input.Description,
+		Price:       input.Price,
+		Cost:        input.Cost,
+		Category:    input.Category,
+		Barcode:     input.Barcode,
+		Size:        input.Size,
+		ExpiryAt:    input.ExpiryAt,
+	}
+	if err := s.itemRepository.Update(c, item.UserID, item.ID, param); err != nil {
+		return errors.WithStack(err)
+	}
+
+	// 3. 결과 반환
+	return nil
+}

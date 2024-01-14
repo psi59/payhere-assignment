@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/psi59/payhere-assignment/repository"
+
 	"github.com/jinzhu/copier"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -161,10 +163,186 @@ func TestItemRepository_Delete(t *testing.T) {
 	})
 }
 
+func TestItemRepository_Update(t *testing.T) {
+	ctx := db.ContextWithConn(context.TODO(), conn)
+	userRepo := NewUserRepository()
+	user := newTestUser(t)
+	err := userRepo.Create(ctx, user)
+	assert.NoError(t, err)
+	itemRepo := NewItemRepository()
+
+	t.Run("OK", func(t *testing.T) {
+		item := newTestItem(t, user.ID)
+		err = itemRepo.Create(ctx, item)
+		assert.NoError(t, err)
+
+		name := gofakeit.Drink()
+		description := gofakeit.SentenceSimple()
+		price := gofakeit.Number(1000, 10000)
+		cost := gofakeit.Number(1000, 10000)
+		category := gofakeit.SentenceSimple()
+		barcode := gofakeit.RandomString([]string{"coffee", "tea", "desert"})
+		size := domain.ItemSizeLarge
+		expiryAt := time.Unix(gofakeit.FutureDate().Unix(), 0).UTC()
+		input := &repository.UpdateItemInput{
+			Name:        &name,
+			Description: &description,
+			Price:       &price,
+			Cost:        &cost,
+			Category:    &category,
+			Barcode:     &barcode,
+			Size:        &size,
+			ExpiryAt:    &expiryAt,
+		}
+		err := itemRepo.Update(ctx, item.UserID, item.ID, input)
+		assert.NoError(t, err)
+
+		var expected domain.Item
+		err = copier.Copy(&expected, item)
+		assert.NoError(t, err)
+		got, err := itemRepo.Get(ctx, item.UserID, item.ID)
+		assert.NoError(t, err)
+
+		expected.Name = name
+		expected.Description = description
+		expected.Price = price
+		expected.Cost = cost
+		expected.Category = category
+		expected.Barcode = barcode
+		expected.Size = size
+		expected.ExpiryAt = expiryAt
+
+		assert.Equal(t, &expected, got)
+	})
+
+	t.Run("부분 업데이트", func(t *testing.T) {
+		item := newTestItem(t, user.ID)
+		err = itemRepo.Create(ctx, item)
+		assert.NoError(t, err)
+
+		name := gofakeit.Drink()
+		expiryAt := time.Unix(gofakeit.FutureDate().Unix(), 0).UTC()
+		input := &repository.UpdateItemInput{
+			Name:     &name,
+			ExpiryAt: &expiryAt,
+		}
+		err := itemRepo.Update(ctx, item.UserID, item.ID, input)
+		assert.NoError(t, err)
+
+		var expected domain.Item
+		err = copier.Copy(&expected, item)
+		assert.NoError(t, err)
+		got, err := itemRepo.Get(ctx, item.UserID, item.ID)
+		assert.NoError(t, err)
+
+		expected.Name = name
+		expected.ExpiryAt = expiryAt
+
+		assert.Equal(t, &expected, got)
+	})
+
+	t.Run("nil context", func(t *testing.T) {
+		item := newTestItem(t, user.ID)
+		err = itemRepo.Create(ctx, item)
+		assert.NoError(t, err)
+
+		name := gofakeit.Drink()
+		expiryAt := time.Unix(gofakeit.FutureDate().Unix(), 0).UTC()
+		input := &repository.UpdateItemInput{
+			Name:     &name,
+			ExpiryAt: &expiryAt,
+		}
+
+		err = itemRepo.Update(nil, item.UserID, item.ID, input)
+		assert.Error(t, err)
+
+	})
+
+	t.Run("invalid userID", func(t *testing.T) {
+		item := newTestItem(t, user.ID)
+		err = itemRepo.Create(ctx, item)
+		assert.NoError(t, err)
+
+		name := gofakeit.Drink()
+		expiryAt := time.Unix(gofakeit.FutureDate().Unix(), 0).UTC()
+		input := &repository.UpdateItemInput{
+			Name:     &name,
+			ExpiryAt: &expiryAt,
+		}
+		err := itemRepo.Update(ctx, 0, item.ID, input)
+		assert.Error(t, err)
+	})
+
+	t.Run("invalid itemID", func(t *testing.T) {
+		item := newTestItem(t, user.ID)
+		err = itemRepo.Create(ctx, item)
+		assert.NoError(t, err)
+
+		name := gofakeit.Drink()
+		expiryAt := time.Unix(gofakeit.FutureDate().Unix(), 0).UTC()
+		input := &repository.UpdateItemInput{
+			Name:     &name,
+			ExpiryAt: &expiryAt,
+		}
+		err := itemRepo.Update(ctx, item.UserID, 0, input)
+		assert.Error(t, err)
+	})
+
+	t.Run("nil input", func(t *testing.T) {
+		item := newTestItem(t, user.ID)
+		err = itemRepo.Create(ctx, item)
+		assert.NoError(t, err)
+		err := itemRepo.Update(ctx, item.UserID, item.ID, nil)
+		assert.Error(t, err)
+	})
+
+	t.Run("invalid input", func(t *testing.T) {
+		item := newTestItem(t, user.ID)
+		err = itemRepo.Create(ctx, item)
+		assert.NoError(t, err)
+		err := itemRepo.Update(ctx, item.UserID, item.ID, &repository.UpdateItemInput{})
+		assert.Error(t, err)
+	})
+
+	t.Run("context without conn", func(t *testing.T) {
+		item := newTestItem(t, user.ID)
+		err = itemRepo.Create(ctx, item)
+		assert.NoError(t, err)
+
+		name := gofakeit.Drink()
+		expiryAt := time.Unix(gofakeit.FutureDate().Unix(), 0).UTC()
+		input := &repository.UpdateItemInput{
+			Name:     &name,
+			ExpiryAt: &expiryAt,
+		}
+		err := itemRepo.Update(context.TODO(), item.UserID, item.ID, input)
+		assert.Error(t, err)
+	})
+
+	t.Run("이름 중복", func(t *testing.T) {
+		item := newTestItem(t, user.ID)
+		err = itemRepo.Create(ctx, item)
+		assert.NoError(t, err)
+
+		item2 := newTestItem(t, user.ID)
+		err = itemRepo.Create(ctx, item2)
+		assert.NoError(t, err)
+
+		expiryAt := time.Unix(gofakeit.FutureDate().Unix(), 0).UTC()
+		input := &repository.UpdateItemInput{
+			Name:     &item2.Name,
+			ExpiryAt: &expiryAt,
+		}
+		err := itemRepo.Update(ctx, item.UserID, item.ID, input)
+		assert.Error(t, err)
+		assert.ErrorIs(t, err, domain.ErrItemAlreadyExists)
+	})
+}
+
 func newTestItem(t *testing.T, userID int) *domain.Item {
 	item, err := domain.NewItem(
 		userID,
-		gofakeit.Drink(),
+		gofakeit.UUID(),
 		gofakeit.SentenceSimple(),
 		gofakeit.Number(5000, 10000),
 		gofakeit.Number(3000, 5000),

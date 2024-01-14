@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	domain "github.com/psi59/payhere-assignment/domain"
+	repository "github.com/psi59/payhere-assignment/repository"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -390,6 +391,44 @@ func (c_2 *MockItemRepositoryGetCall) Do(f func(context.Context, int, int) (*dom
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
 func (c_2 *MockItemRepositoryGetCall) DoAndReturn(f func(context.Context, int, int) (*domain.Item, error)) *MockItemRepositoryGetCall {
+	c_2.Call = c_2.Call.DoAndReturn(f)
+	return c_2
+}
+
+// Update mocks base method.
+func (m *MockItemRepository) Update(c context.Context, userID, itemID int, input *repository.UpdateItemInput) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", c, userID, itemID, input)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockItemRepositoryMockRecorder) Update(c, userID, itemID, input any) *MockItemRepositoryUpdateCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockItemRepository)(nil).Update), c, userID, itemID, input)
+	return &MockItemRepositoryUpdateCall{Call: call}
+}
+
+// MockItemRepositoryUpdateCall wrap *gomock.Call
+type MockItemRepositoryUpdateCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c_2 *MockItemRepositoryUpdateCall) Return(arg0 error) *MockItemRepositoryUpdateCall {
+	c_2.Call = c_2.Call.Return(arg0)
+	return c_2
+}
+
+// Do rewrite *gomock.Call.Do
+func (c_2 *MockItemRepositoryUpdateCall) Do(f func(context.Context, int, int, *repository.UpdateItemInput) error) *MockItemRepositoryUpdateCall {
+	c_2.Call = c_2.Call.Do(f)
+	return c_2
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c_2 *MockItemRepositoryUpdateCall) DoAndReturn(f func(context.Context, int, int, *repository.UpdateItemInput) error) *MockItemRepositoryUpdateCall {
 	c_2.Call = c_2.Call.DoAndReturn(f)
 	return c_2
 }

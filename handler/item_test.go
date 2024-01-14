@@ -536,6 +536,234 @@ func TestItemHandler_Delete(t *testing.T) {
 	})
 }
 
+func TestItemHandler_Update(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	itemUsecase := ucmocks.NewMockItemTokenUsecase(ctrl)
+	r := gin.New()
+	handler, err := NewItemHandler(itemUsecase)
+	assert.NoError(t, err)
+	assert.NotNil(t, handler)
+
+	name := gofakeit.Drink()
+	userDomain := newTestUser(t, gofakeit.Password(true, true, true, true, true, 10))
+	r.PUT("/items/:itemId", ginhelper.ContextMiddleware(), func(ginCtx *gin.Context) {
+		ctx := ginhelper.GetContext(ginCtx)
+		ctx = context.WithValue(ctx, domain.CtxKeyUser, userDomain)
+		ginhelper.SetContext(ginCtx, ctx)
+		ginCtx.Next()
+	}, handler.Update)
+	r.PUT("/unauthorized/:itemId", handler.Update)
+
+	t.Run("OK", func(t *testing.T) {
+		updateItemRequest := &UpdateItemRequest{
+			Name: &name,
+		}
+		itemDomain := newTestItem(t, userDomain.ID)
+		itemUsecase.EXPECT().Update(gomock.Any(), &item.UpdateInput{
+			User:   userDomain,
+			ItemID: itemDomain.ID,
+			Name:   &name,
+		}).Return(nil)
+
+		responseWriter := httptest.NewRecorder()
+		buf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(buf).Encode(updateItemRequest)
+		require.NoError(t, err)
+		httpRequest, err := http.NewRequest(http.MethodPut, fmt.Sprintf("/items/%d", itemDomain.ID), buf)
+		require.NoError(t, err)
+		r.ServeHTTP(responseWriter, httpRequest)
+
+		assert.Equal(t, http.StatusNoContent, responseWriter.Code)
+	})
+
+	t.Run("invalid itemID", func(t *testing.T) {
+		updateItemRequest := &UpdateItemRequest{
+			Name: &name,
+		}
+		responseWriter := httptest.NewRecorder()
+		buf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(buf).Encode(updateItemRequest)
+		require.NoError(t, err)
+		httpRequest, err := http.NewRequest(http.MethodPut, fmt.Sprintf("/items/%s", gofakeit.UUID()), buf)
+		require.NoError(t, err)
+		r.ServeHTTP(responseWriter, httpRequest)
+
+		responseData := &GetItemResponse{}
+		resp := ginhelper.Response{Data: responseData}
+		err = json.NewDecoder(responseWriter.Body).Decode(&resp)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusNotFound, responseWriter.Code)
+		assert.Equal(t, http.StatusNotFound, resp.Meta.Code)
+		assert.Equal(t, i18n.T(language.English, i18n.ItemNotFound, nil), resp.Meta.Message)
+	})
+
+	t.Run("unauthorized", func(t *testing.T) {
+		itemDomain := newTestItem(t, userDomain.ID)
+		responseWriter := httptest.NewRecorder()
+		httpRequest, err := http.NewRequest(http.MethodPut, fmt.Sprintf("/unauthorized/%d", itemDomain.ID), nil)
+		require.NoError(t, err)
+		r.ServeHTTP(responseWriter, httpRequest)
+
+		responseData := &GetItemResponse{}
+		resp := ginhelper.Response{Data: responseData}
+		err = json.NewDecoder(responseWriter.Body).Decode(&resp)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusInternalServerError, responseWriter.Code)
+		assert.Equal(t, http.StatusInternalServerError, resp.Meta.Code)
+		assert.Equal(t, i18n.T(language.English, i18n.InternalError, nil), resp.Meta.Message)
+	})
+
+	t.Run("binding error", func(t *testing.T) {
+		itemDomain := newTestItem(t, userDomain.ID)
+		responseWriter := httptest.NewRecorder()
+		buf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(buf).Encode(map[string]any{
+			"name": 1,
+		})
+		require.NoError(t, err)
+		httpRequest, err := http.NewRequest(http.MethodPut, fmt.Sprintf("/items/%d", itemDomain.ID), buf)
+		require.NoError(t, err)
+		r.ServeHTTP(responseWriter, httpRequest)
+
+		responseData := &GetItemResponse{}
+		resp := ginhelper.Response{Data: responseData}
+		err = json.NewDecoder(responseWriter.Body).Decode(&resp)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, responseWriter.Code)
+		assert.Equal(t, http.StatusBadRequest, resp.Meta.Code)
+		assert.Equal(t, i18n.T(language.English, i18n.InvalidRequest, nil), resp.Meta.Message)
+	})
+
+	t.Run("invalid request", func(t *testing.T) {
+		emptyName := ""
+		itemDomain := newTestItem(t, userDomain.ID)
+		updateItemRequest := &UpdateItemRequest{
+			Name: &emptyName,
+		}
+		responseWriter := httptest.NewRecorder()
+		buf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(buf).Encode(updateItemRequest)
+		require.NoError(t, err)
+		httpRequest, err := http.NewRequest(http.MethodPut, fmt.Sprintf("/items/%d", itemDomain.ID), buf)
+		require.NoError(t, err)
+		r.ServeHTTP(responseWriter, httpRequest)
+
+		responseData := &GetItemResponse{}
+		resp := ginhelper.Response{Data: responseData}
+		err = json.NewDecoder(responseWriter.Body).Decode(&resp)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, responseWriter.Code)
+		assert.Equal(t, http.StatusBadRequest, resp.Meta.Code)
+		assert.Equal(t, i18n.T(language.English, i18n.InvalidRequest, nil), resp.Meta.Message)
+	})
+
+	t.Run("invalid request", func(t *testing.T) {
+		itemDomain := newTestItem(t, userDomain.ID)
+		updateItemRequest := &UpdateItemRequest{}
+		responseWriter := httptest.NewRecorder()
+		buf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(buf).Encode(updateItemRequest)
+		require.NoError(t, err)
+		httpRequest, err := http.NewRequest(http.MethodPut, fmt.Sprintf("/items/%d", itemDomain.ID), buf)
+		require.NoError(t, err)
+		r.ServeHTTP(responseWriter, httpRequest)
+
+		responseData := &GetItemResponse{}
+		resp := ginhelper.Response{Data: responseData}
+		err = json.NewDecoder(responseWriter.Body).Decode(&resp)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusBadRequest, responseWriter.Code)
+		assert.Equal(t, http.StatusBadRequest, resp.Meta.Code)
+		assert.Equal(t, i18n.T(language.English, i18n.InvalidRequest, nil), resp.Meta.Message)
+	})
+
+	t.Run("item not found", func(t *testing.T) {
+		updateItemRequest := &UpdateItemRequest{
+			Name: &name,
+		}
+		itemDomain := newTestItem(t, userDomain.ID)
+		itemUsecase.EXPECT().Update(gomock.Any(), &item.UpdateInput{
+			User:   userDomain,
+			ItemID: itemDomain.ID,
+			Name:   &name,
+		}).Return(domain.ErrItemNotFound)
+
+		responseWriter := httptest.NewRecorder()
+		buf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(buf).Encode(updateItemRequest)
+		require.NoError(t, err)
+		httpRequest, err := http.NewRequest(http.MethodPut, fmt.Sprintf("/items/%d", itemDomain.ID), buf)
+		require.NoError(t, err)
+		r.ServeHTTP(responseWriter, httpRequest)
+
+		responseData := &GetItemResponse{}
+		resp := ginhelper.Response{Data: responseData}
+		err = json.NewDecoder(responseWriter.Body).Decode(&resp)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusNotFound, responseWriter.Code)
+		assert.Equal(t, http.StatusNotFound, resp.Meta.Code)
+		assert.Equal(t, i18n.T(language.English, i18n.ItemNotFound, nil), resp.Meta.Message)
+	})
+
+	t.Run("중복된 아이템", func(t *testing.T) {
+		updateItemRequest := &UpdateItemRequest{
+			Name: &name,
+		}
+		itemDomain := newTestItem(t, userDomain.ID)
+		itemUsecase.EXPECT().Update(gomock.Any(), &item.UpdateInput{
+			User:   userDomain,
+			ItemID: itemDomain.ID,
+			Name:   &name,
+		}).Return(domain.ErrItemAlreadyExists)
+
+		responseWriter := httptest.NewRecorder()
+		buf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(buf).Encode(updateItemRequest)
+		require.NoError(t, err)
+		httpRequest, err := http.NewRequest(http.MethodPut, fmt.Sprintf("/items/%d", itemDomain.ID), buf)
+		require.NoError(t, err)
+		r.ServeHTTP(responseWriter, httpRequest)
+
+		responseData := &GetItemResponse{}
+		resp := ginhelper.Response{Data: responseData}
+		err = json.NewDecoder(responseWriter.Body).Decode(&resp)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusConflict, responseWriter.Code)
+		assert.Equal(t, http.StatusConflict, resp.Meta.Code)
+		assert.Equal(t, i18n.T(language.English, i18n.ItemAlreadyExists, nil), resp.Meta.Message)
+	})
+
+	t.Run("unexpected error", func(t *testing.T) {
+		updateItemRequest := &UpdateItemRequest{
+			Name: &name,
+		}
+		itemDomain := newTestItem(t, userDomain.ID)
+		itemUsecase.EXPECT().Update(gomock.Any(), &item.UpdateInput{
+			User:   userDomain,
+			ItemID: itemDomain.ID,
+			Name:   &name,
+		}).Return(gofakeit.Error())
+
+		responseWriter := httptest.NewRecorder()
+		buf := bytes.NewBuffer(nil)
+		err := json.NewEncoder(buf).Encode(updateItemRequest)
+		require.NoError(t, err)
+		httpRequest, err := http.NewRequest(http.MethodPut, fmt.Sprintf("/items/%d", itemDomain.ID), buf)
+		require.NoError(t, err)
+		r.ServeHTTP(responseWriter, httpRequest)
+
+		responseData := &GetItemResponse{}
+		resp := ginhelper.Response{Data: responseData}
+		err = json.NewDecoder(responseWriter.Body).Decode(&resp)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusInternalServerError, responseWriter.Code)
+		assert.Equal(t, http.StatusInternalServerError, resp.Meta.Code)
+		assert.Equal(t, i18n.T(language.English, i18n.InternalError, nil), resp.Meta.Message)
+	})
+}
+
 func newTestItem(t *testing.T, userID int) *domain.Item {
 	itemDomain, err := domain.NewItem(
 		userID,

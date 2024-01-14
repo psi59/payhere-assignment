@@ -8,6 +8,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/psi59/payhere-assignment/usecase/item"
+
 	"github.com/psi59/payhere-assignment/usecase/authtoken"
 
 	"github.com/psi59/payhere-assignment/repository/mysql"
@@ -67,14 +69,17 @@ type APIServer struct {
 
 	// Handlers
 	UserHandler *handler.UserHandler
+	ItemHandler *handler.ItemHandler
 
 	// Usecases
 	UserUsecase      user.Usecase
 	AuthTokenUsecase authtoken.Usecase
+	ItemUsecase      item.Usecase
 
 	// Repositories
 	UserRepository           repository.UserRepository
 	TokenBlacklistRepository repository.TokenBlacklistRepository
+	itemRepository           repository.ItemRepository
 
 	// ETC
 	dbConn *gorm.DB
@@ -170,6 +175,13 @@ func (s *APIServer) initRoutes() {
 		v1User.POST("/signIn", s.UserHandler.SignIn)
 		v1User.POST("/signOut", s.AuthMiddleware.Auth(), s.UserHandler.SignOut)
 	}
+	{
+		v1Item := v1.Group("/items", s.AuthMiddleware.Auth())
+		v1Item.POST("/", s.ItemHandler.Create)
+		v1Item.GET("/:itemId", s.ItemHandler.Get)
+		v1Item.DELETE("/:itemId", s.ItemHandler.Delete)
+		v1Item.PUT("/:itemId", s.ItemHandler.Update)
+	}
 
 }
 
@@ -189,8 +201,13 @@ func (s *APIServer) initHandler() error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
+	itemHandler, err := handler.NewItemHandler(s.ItemUsecase)
+	if err != nil {
+		return errors.WithStack(err)
+	}
 
 	s.UserHandler = userHandler
+	s.ItemHandler = itemHandler
 
 	return nil
 }
@@ -204,9 +221,14 @@ func (s *APIServer) initUsecase() error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
+	itemService, err := item.NewService(s.itemRepository)
+	if err != nil {
+		return errors.WithStack(err)
+	}
 
 	s.UserUsecase = userService
 	s.AuthTokenUsecase = authTokenService
+	s.ItemUsecase = itemService
 
 	return nil
 }
@@ -214,9 +236,11 @@ func (s *APIServer) initUsecase() error {
 func (s *APIServer) initRepositories() {
 	userRepository := mysql.NewUserRepository()
 	tokenBlacklistRepository := mysql.NewTokenBlacklistRepository()
+	itemRepository := mysql.NewItemRepository()
 
 	s.UserRepository = userRepository
 	s.TokenBlacklistRepository = tokenBlacklistRepository
+	s.itemRepository = itemRepository
 }
 
 func (s *APIServer) initDB() error {

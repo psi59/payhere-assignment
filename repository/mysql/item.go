@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/psi59/payhere-assignment/repository"
+
 	"gorm.io/gorm"
 
 	"github.com/psi59/payhere-assignment/internal/db"
@@ -113,6 +115,37 @@ func (r *ItemRepository) Delete(c context.Context, userID, itemID int) error {
 	return nil
 }
 
+func (r *ItemRepository) Update(c context.Context, userID, itemID int, input *repository.UpdateItemInput) error {
+	switch {
+	case valid.IsNil(c):
+		return domain.ErrNilContext
+	case userID < 1:
+		return fmt.Errorf("invalid userID: %d", userID)
+	case itemID < 1:
+		return fmt.Errorf("invalid itemID: %d", itemID)
+	case valid.IsNil(input):
+		return domain.ErrNilInput
+	}
+	if err := input.Validate(); err != nil {
+		return errors.WithStack(err)
+	}
+
+	conn, err := db.ConnFromContext(c)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	updateItem := createItemByUpdateItemInput(input)
+	if err := conn.Model(&Item{}).Where("user_id = ?", userID).Where("item_id = ?", itemID).Updates(updateItem).Error; err != nil {
+		if IsDuplicateEntry(err) {
+			return errors.Wrap(domain.ErrItemAlreadyExists, err.Error())
+		}
+		return errors.WithStack(err)
+	}
+
+	return nil
+}
+
 type Item struct {
 	ItemID      int             `gorm:"item_id;primaryKey"`
 	UserID      int             `gorm:"user_id"`
@@ -145,4 +178,34 @@ func (i *Item) Domain() *domain.Item {
 		Size:        i.ItemSize,
 		CreatedAt:   i.CreatedAt,
 	}
+}
+
+func createItemByUpdateItemInput(input *repository.UpdateItemInput) *Item {
+	var item Item
+	if !valid.IsNil(input.Name) {
+		item.ItemName = *input.Name
+	}
+	if !valid.IsNil(input.Description) {
+		item.Description = *input.Description
+	}
+	if !valid.IsNil(input.Price) {
+		item.Price = *input.Price
+	}
+	if !valid.IsNil(input.Cost) {
+		item.Cost = *input.Cost
+	}
+	if !valid.IsNil(input.Category) {
+		item.Category = *input.Category
+	}
+	if !valid.IsNil(input.Barcode) {
+		item.Barcode = *input.Barcode
+	}
+	if !valid.IsNil(input.Size) {
+		item.ItemSize = *input.Size
+	}
+	if !valid.IsNil(input.ExpiryAt) {
+		item.ExpiryAt = *input.ExpiryAt
+	}
+
+	return &item
 }

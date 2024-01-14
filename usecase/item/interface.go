@@ -2,6 +2,7 @@ package item
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -14,6 +15,7 @@ type Usecase interface {
 	Create(c context.Context, input *CreateInput) (*CreateOutput, error)
 	Get(c context.Context, input *GetInput) (*GetOutput, error)
 	Delete(c context.Context, input *DeleteInput) error
+	Update(c context.Context, input *UpdateInput) error
 }
 
 const ErrNilUsecase domain.ConstantError = "nil ItemUsecase"
@@ -68,6 +70,37 @@ type DeleteInput struct {
 }
 
 func (i *DeleteInput) Validate() error {
+	if err := valid.ValidateStruct(i); err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
+}
+
+type UpdateInput struct {
+	User        *domain.User     `validate:"required"`
+	ItemID      int              `validate:"required"`
+	Name        *string          `validate:"omitempty,required"`
+	Description *string          `validate:"omitempty,required"`
+	Price       *int             `validate:"omitempty,gt=0"`
+	Cost        *int             `validate:"omitempty,gt=0"`
+	Category    *string          `validate:"omitempty,required"`
+	Barcode     *string          `validate:"omitempty,required"`
+	Size        *domain.ItemSize `validate:"omitempty,required,oneof=small large"`
+	ExpiryAt    *time.Time       `validate:"omitempty,required"`
+}
+
+func (i *UpdateInput) Validate() error {
+	if valid.IsNil(i.Name) &&
+		valid.IsNil(i.Description) &&
+		valid.IsNil(i.Price) &&
+		valid.IsNil(i.Cost) &&
+		valid.IsNil(i.Category) &&
+		valid.IsNil(i.Barcode) &&
+		valid.IsNil(i.Size) &&
+		valid.IsNil(i.ExpiryAt) {
+		return fmt.Errorf("invalid input")
+	}
 	if err := valid.ValidateStruct(i); err != nil {
 		return errors.WithStack(err)
 	}

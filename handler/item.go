@@ -167,6 +167,65 @@ func (h *ItemHandler) Delete(ginCtx *gin.Context) {
 	ginCtx.Status(http.StatusNoContent)
 }
 
+func (h *ItemHandler) Update(ginCtx *gin.Context) {
+	ctx := ginhelper.GetContext(ginCtx)
+
+	// 1. 인증된 유저 확인
+	user, ok := ctx.Value(domain.CtxKeyUser).(*domain.User)
+	if !ok {
+		ginhelper.Error(ginCtx, errors.New("unauthenticated request"))
+		return
+	}
+
+	itemIDParam := ginCtx.Param("itemId")
+	itemID, err := strconv.Atoi(itemIDParam)
+	if err != nil {
+		ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusNotFound, i18n.ItemNotFound, errors.WithStack(err)))
+		return
+	}
+
+	var req UpdateItemRequest
+	if err := ginCtx.BindJSON(&req); err != nil {
+		ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, errors.WithStack(err)))
+		return
+	}
+	if err := valid.ValidateStruct(req); err != nil {
+		ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, errors.WithStack(err)))
+		return
+	}
+	if !req.ShouldUpdate() {
+		ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusBadRequest, i18n.InvalidRequest, errors.WithStack(err)))
+		return
+	}
+
+	if err := h.itemUsecase.Update(ctx, &item.UpdateInput{
+		User:        user,
+		ItemID:      itemID,
+		Name:        req.Name,
+		Description: req.Description,
+		Price:       req.Price,
+		Cost:        req.Cost,
+		Category:    req.Category,
+		Barcode:     req.Barcode,
+		Size:        req.Size,
+		ExpiryAt:    req.ExpiryAt,
+	}); err != nil {
+		if errors.Is(err, domain.ErrItemNotFound) {
+			ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusNotFound, i18n.ItemNotFound, errors.WithStack(err)))
+			return
+		}
+		if errors.Is(err, domain.ErrItemAlreadyExists) {
+			ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusConflict, i18n.ItemAlreadyExists, errors.WithStack(err)))
+			return
+		}
+
+		ginhelper.Error(ginCtx, errors.WithStack(err))
+		return
+	}
+
+	ginCtx.Status(http.StatusNoContent)
+}
+
 type CreateItemRequest struct {
 	Name        string          `json:"name" validate:"required,gte=1,lte=100"`
 	Description string          `json:"description" validate:"required"`
@@ -202,4 +261,26 @@ type GetItemResponse struct {
 	Size        domain.ItemSize `json:"size"`
 	ExpiryAt    time.Time       `json:"expiryAt"`
 	CreatedAt   time.Time       `json:"createdAt"`
+}
+
+type UpdateItemRequest struct {
+	Name        *string          `json:"name" validate:"omitempty,gte=1,lte=100"`
+	Description *string          `json:"description" validate:"omitempty,required"`
+	Price       *int             `json:"price" validate:"omitempty,gt=0"`
+	Cost        *int             `json:"cost" validate:"omitempty,gt=0"`
+	Category    *string          `json:"category" validate:"omitempty,required,gte=1,lte=100"`
+	Barcode     *string          `json:"barcode" validate:"omitempty,required,gte=1,lte=100"`
+	Size        *domain.ItemSize `json:"size" validate:"omitempty,required,oneof=small large"`
+	ExpiryAt    *time.Time       `json:"expiryAt" validate:"omitempty,required"`
+}
+
+func (r *UpdateItemRequest) ShouldUpdate() bool {
+	return !valid.IsNil(r.Name) ||
+		!valid.IsNil(r.Description) ||
+		!valid.IsNil(r.Price) ||
+		!valid.IsNil(r.Cost) ||
+		!valid.IsNil(r.Category) ||
+		!valid.IsNil(r.Barcode) ||
+		!valid.IsNil(r.Size) ||
+		!valid.IsNil(r.ExpiryAt)
 }

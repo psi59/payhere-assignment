@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/psi59/payhere-assignment/repository"
+
 	"github.com/stretchr/testify/require"
 
 	"github.com/brianvoe/gofakeit/v6"
@@ -283,6 +285,85 @@ func TestService_Delete(t *testing.T) {
 			ItemID: item.ID,
 		}
 		err := srv.Delete(ctx, input)
+		assert.Error(t, err)
+	})
+}
+
+func TestService_Update(t *testing.T) {
+	ctx := context.TODO()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	itemRepository := repomocks.NewMockItemRepository(ctrl)
+	srv, err := NewService(itemRepository)
+	assert.NoError(t, err)
+	item := newTestItem(t, userDomain.ID)
+
+	name := gofakeit.Drink()
+	updateInput := &repository.UpdateItemInput{
+		Name: &name,
+	}
+
+	t.Run("OK", func(t *testing.T) {
+		itemRepository.EXPECT().Get(ctx, userDomain.ID, item.ID).Return(item, nil)
+		itemRepository.EXPECT().Update(ctx, userDomain.ID, item.ID, updateInput).Return(nil)
+		input := &UpdateInput{
+			User:   userDomain,
+			ItemID: item.ID,
+			Name:   &name,
+		}
+		err := srv.Update(ctx, input)
+		assert.NoError(t, err)
+	})
+
+	t.Run("nil context", func(t *testing.T) {
+		item := newTestItem(t, userDomain.ID)
+		input := &UpdateInput{
+			User:   userDomain,
+			ItemID: item.ID,
+			Name:   &name,
+		}
+		err := srv.Update(nil, input)
+		assert.Error(t, err)
+	})
+
+	t.Run("nil input", func(t *testing.T) {
+		err := srv.Update(ctx, nil)
+		assert.Error(t, err)
+	})
+
+	t.Run("invalid input", func(t *testing.T) {
+		input := &UpdateInput{
+			User:   userDomain,
+			ItemID: 0,
+			Name:   &name,
+		}
+		err := srv.Update(ctx, input)
+		assert.Error(t, err)
+	})
+
+	t.Run("item not found", func(t *testing.T) {
+		item := newTestItem(t, userDomain.ID)
+		itemRepository.EXPECT().Get(ctx, userDomain.ID, item.ID).Return(nil, domain.ErrItemNotFound)
+		input := &UpdateInput{
+			User:   userDomain,
+			ItemID: item.ID,
+			Name:   &name,
+		}
+		err := srv.Update(ctx, input)
+		assert.Error(t, err)
+	})
+
+	t.Run("아이템 수정 에러", func(t *testing.T) {
+		item := newTestItem(t, userDomain.ID)
+		itemRepository.EXPECT().Get(ctx, userDomain.ID, item.ID).Return(item, nil)
+		itemRepository.EXPECT().Update(ctx, userDomain.ID, item.ID, updateInput).Return(gofakeit.Error())
+		input := &UpdateInput{
+			User:   userDomain,
+			ItemID: item.ID,
+			Name:   &name,
+		}
+		err := srv.Update(ctx, input)
 		assert.Error(t, err)
 	})
 }
