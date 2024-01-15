@@ -1,4 +1,4 @@
-과제.md
 vendor/
 !config/*.reference.yaml
 config/*.yaml
+cover.out
