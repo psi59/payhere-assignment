@@ -85,15 +85,7 @@ func TestUserHandler_SignUp(t *testing.T) {
 
 	userUsecase := ucmocks.NewMockUserUsecase(ctrl)
 	authTokenUsecase := ucmocks.NewMockAuthTokenUsecase(ctrl)
-
-	userDomain, err := domain.NewUser(
-		gofakeit.Name(),
-		gofakeit.Regex(`^01\d{8,9}$`),
-		gofakeit.Password(true, true, true, true, true, 10),
-		gofakeit.Date(),
-	)
-	require.NoError(t, err)
-	userDomain.ID = gofakeit.Number(1, 10)
+	userDomain := newTestUser(t, gofakeit.Password(true, true, true, true, true, 10))
 
 	r := gin.New()
 	handler, err := NewUserHandler(userUsecase, authTokenUsecase)
@@ -102,12 +94,10 @@ func TestUserHandler_SignUp(t *testing.T) {
 
 	t.Run("OK", func(t *testing.T) {
 		signUpRequest := SignUpRequest{
-			Name:        userDomain.Name,
 			PhoneNumber: userDomain.PhoneNumber,
 			Password:    userDomain.Password,
 		}
 		userUsecase.EXPECT().Create(gomock.Any(), &user.CreateInput{
-			Name:        signUpRequest.Name,
 			PhoneNumber: signUpRequest.PhoneNumber,
 			Password:    signUpRequest.Password,
 		}).Return(&user.CreateOutput{User: userDomain}, nil)
@@ -143,7 +133,6 @@ func TestUserHandler_SignUp(t *testing.T) {
 
 	t.Run("invalid request", func(t *testing.T) {
 		signUpRequest := SignUpRequest{
-			Name:        userDomain.Name,
 			PhoneNumber: gofakeit.UUID(),
 			Password:    userDomain.Password,
 		}
@@ -165,15 +154,13 @@ func TestUserHandler_SignUp(t *testing.T) {
 
 	t.Run("user already exists", func(t *testing.T) {
 		signUpRequest := SignUpRequest{
-			Name:        userDomain.Name,
 			PhoneNumber: userDomain.PhoneNumber,
 			Password:    userDomain.Password,
 		}
 		userUsecase.EXPECT().Create(gomock.Any(), &user.CreateInput{
-			Name:        signUpRequest.Name,
 			PhoneNumber: signUpRequest.PhoneNumber,
 			Password:    signUpRequest.Password,
-		}).Return(nil, domain.ErrDuplicatedUser)
+		}).Return(nil, domain.ErrUserAlreadyExists)
 		responseWriter := httptest.NewRecorder()
 		buf := bytes.NewBuffer(nil)
 		err := json.NewEncoder(buf).Encode(signUpRequest)
@@ -192,12 +179,10 @@ func TestUserHandler_SignUp(t *testing.T) {
 
 	t.Run("unexpected usecase error", func(t *testing.T) {
 		signUpRequest := SignUpRequest{
-			Name:        userDomain.Name,
 			PhoneNumber: userDomain.PhoneNumber,
 			Password:    userDomain.Password,
 		}
 		userUsecase.EXPECT().Create(gomock.Any(), &user.CreateInput{
-			Name:        signUpRequest.Name,
 			PhoneNumber: signUpRequest.PhoneNumber,
 			Password:    signUpRequest.Password,
 		}).Return(nil, gofakeit.Error())
@@ -226,13 +211,7 @@ func TestUserHandler_SignIn(t *testing.T) {
 	authTokenUsecase := ucmocks.NewMockAuthTokenUsecase(ctrl)
 
 	plainPassword := gofakeit.Password(true, true, true, true, true, 10)
-	userDomain, err := domain.NewUser(
-		gofakeit.Name(),
-		gofakeit.Regex(`^01\d{8,9}$`),
-		plainPassword,
-		gofakeit.Date(),
-	)
-	require.NoError(t, err)
+	userDomain := newTestUser(t, plainPassword)
 	userDomain.ID = gofakeit.Number(1, 10)
 
 	r := gin.New()
@@ -418,16 +397,6 @@ func TestUserHandler_SignOut(t *testing.T) {
 	userUsecase := ucmocks.NewMockUserUsecase(ctrl)
 	authTokenUsecase := ucmocks.NewMockAuthTokenUsecase(ctrl)
 
-	plainPassword := gofakeit.Password(true, true, true, true, true, 10)
-	userDomain, err := domain.NewUser(
-		gofakeit.Name(),
-		gofakeit.Regex(`^01\d{8,9}$`),
-		plainPassword,
-		gofakeit.Date(),
-	)
-	require.NoError(t, err)
-	userDomain.ID = gofakeit.Number(1, 10)
-
 	r := gin.New()
 	handler, err := NewUserHandler(userUsecase, authTokenUsecase)
 	require.NoError(t, err)
@@ -452,7 +421,7 @@ func TestUserHandler_SignOut(t *testing.T) {
 		token := gofakeit.UUID()
 		authTokenUsecase.EXPECT().RegisterBlacklist(gomock.Any(), &authtoken.RegisterBlacklistInput{
 			Token: token,
-		}).Return(domain.ErrDuplicatedTokenBlacklist)
+		}).Return(domain.ErrTokenBlacklistAlreadyExists)
 
 		responseWriter := httptest.NewRecorder()
 		httpRequest, err := http.NewRequest(http.MethodPost, "/", nil)
@@ -487,4 +456,16 @@ func TestUserHandler_SignOut(t *testing.T) {
 		assert.Equal(t, http.StatusInternalServerError, resp.Meta.Code)
 		assert.Equal(t, i18n.T(language.English, i18n.InternalError, nil), resp.Meta.Message)
 	})
+}
+
+func newTestUser(t *testing.T, password string) *domain.User {
+	userDomain, err := domain.NewUser(
+		gofakeit.Regex(`^01\d{8,9}$`),
+		password,
+		gofakeit.Date(),
+	)
+	require.NoError(t, err)
+	userDomain.ID = gofakeit.Number(1, 10)
+
+	return userDomain
 }

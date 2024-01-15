@@ -50,7 +50,7 @@ func TestTokenBlacklistRepository_Create(t *testing.T) {
 		require.NoError(t, err)
 
 		err = repo.Create(ctx, token)
-		require.ErrorIs(t, err, domain.ErrDuplicatedTokenBlacklist)
+		require.ErrorIs(t, err, domain.ErrTokenBlacklistAlreadyExists)
 	})
 }
 

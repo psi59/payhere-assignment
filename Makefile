@@ -6,5 +6,5 @@ vendor:
 
 test:
 	rm -f cover.out
-	go test -v -coverpkg=./... -coverprofile=cover.out ./...
+	go test -v -coverprofile=cover.out ./...
 	go tool cover -html=cover.out

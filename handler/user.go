@@ -48,13 +48,12 @@ func (h *UserHandler) SignUp(ginCtx *gin.Context) {
 		return
 	}
 	userCreateOutput, err := h.userUsecase.Create(ctx, &user.CreateInput{
-		Name:        req.Name,
 		PhoneNumber: req.PhoneNumber,
 		Password:    req.Password,
 	})
 	if err != nil {
 		switch {
-		case errors.Is(err, domain.ErrDuplicatedUser):
+		case errors.Is(err, domain.ErrUserAlreadyExists):
 			ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusConflict, i18n.UserAlreadyExists, errors.WithStack(err)))
 		default:
 			ginhelper.Error(ginCtx, errors.WithStack(err))
@@ -112,7 +111,7 @@ func (h *UserHandler) SignOut(ginCtx *gin.Context) {
 	token := ginhelper.GetToken(ginCtx)
 
 	if err := h.authTokenUsecase.RegisterBlacklist(ctx, &authtoken.RegisterBlacklistInput{Token: token}); err != nil {
-		if errors.Is(err, domain.ErrDuplicatedTokenBlacklist) {
+		if errors.Is(err, domain.ErrTokenBlacklistAlreadyExists) {
 			ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusUnauthorized, i18n.TokenBlacklistAlreadyExists, errors.WithStack(err)))
 			return
 		}
@@ -121,12 +120,11 @@ func (h *UserHandler) SignOut(ginCtx *gin.Context) {
 		return
 	}
 
-	ginhelper.Success(ginCtx, nil)
+	ginCtx.Status(http.StatusNoContent)
 	return
 }
 
 type SignUpRequest struct {
-	Name        string `json:"name"`
 	PhoneNumber string `json:"phoneNumber"`
 	Password    string `json:"password"`
 }

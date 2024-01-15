@@ -51,15 +51,14 @@ func TestUserRepository_Create(t *testing.T) {
 		dupl.ID = 0
 		require.NoError(t, err)
 		err = repo.Create(ctx, &dupl)
-		require.ErrorIs(t, err, domain.ErrDuplicatedUser)
+		require.ErrorIs(t, err, domain.ErrUserAlreadyExists)
 	})
 }
 
 func newTestUser(t *testing.T) *domain.User {
 	user, err := domain.NewUser(
-		gofakeit.Name(),
 		gofakeit.Regex(`^01\d{8,9}$`),
-		gofakeit.Password(true, true, true, true, true, gofakeit.Number(8, 32)),
+		gofakeit.Password(true, true, true, true, true, 72),
 		time.Unix(time.Now().Unix(), 0).UTC(),
 	)
 	require.NoError(t, err)

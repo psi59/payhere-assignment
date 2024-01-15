@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 
 	domain "github.com/psi59/payhere-assignment/domain"
+	repository "github.com/psi59/payhere-assignment/repository"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -252,6 +253,221 @@ func (c_2 *MockTokenBlacklistRepositoryGetCall) Do(f func(context.Context, strin
 
 // DoAndReturn rewrite *gomock.Call.DoAndReturn
 func (c_2 *MockTokenBlacklistRepositoryGetCall) DoAndReturn(f func(context.Context, string) (*domain.AuthToken, error)) *MockTokenBlacklistRepositoryGetCall {
+	c_2.Call = c_2.Call.DoAndReturn(f)
+	return c_2
+}
+
+// MockItemRepository is a mock of ItemRepository interface.
+type MockItemRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockItemRepositoryMockRecorder
+}
+
+// MockItemRepositoryMockRecorder is the mock recorder for MockItemRepository.
+type MockItemRepositoryMockRecorder struct {
+	mock *MockItemRepository
+}
+
+// NewMockItemRepository creates a new mock instance.
+func NewMockItemRepository(ctrl *gomock.Controller) *MockItemRepository {
+	mock := &MockItemRepository{ctrl: ctrl}
+	mock.recorder = &MockItemRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockItemRepository) EXPECT() *MockItemRepositoryMockRecorder {
+	return m.recorder
+}
+
+// Create mocks base method.
+func (m *MockItemRepository) Create(c context.Context, item *domain.Item) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", c, item)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockItemRepositoryMockRecorder) Create(c, item any) *MockItemRepositoryCreateCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockItemRepository)(nil).Create), c, item)
+	return &MockItemRepositoryCreateCall{Call: call}
+}
+
+// MockItemRepositoryCreateCall wrap *gomock.Call
+type MockItemRepositoryCreateCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c_2 *MockItemRepositoryCreateCall) Return(arg0 error) *MockItemRepositoryCreateCall {
+	c_2.Call = c_2.Call.Return(arg0)
+	return c_2
+}
+
+// Do rewrite *gomock.Call.Do
+func (c_2 *MockItemRepositoryCreateCall) Do(f func(context.Context, *domain.Item) error) *MockItemRepositoryCreateCall {
+	c_2.Call = c_2.Call.Do(f)
+	return c_2
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c_2 *MockItemRepositoryCreateCall) DoAndReturn(f func(context.Context, *domain.Item) error) *MockItemRepositoryCreateCall {
+	c_2.Call = c_2.Call.DoAndReturn(f)
+	return c_2
+}
+
+// Delete mocks base method.
+func (m *MockItemRepository) Delete(c context.Context, userID, itemID int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", c, userID, itemID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockItemRepositoryMockRecorder) Delete(c, userID, itemID any) *MockItemRepositoryDeleteCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockItemRepository)(nil).Delete), c, userID, itemID)
+	return &MockItemRepositoryDeleteCall{Call: call}
+}
+
+// MockItemRepositoryDeleteCall wrap *gomock.Call
+type MockItemRepositoryDeleteCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c_2 *MockItemRepositoryDeleteCall) Return(arg0 error) *MockItemRepositoryDeleteCall {
+	c_2.Call = c_2.Call.Return(arg0)
+	return c_2
+}
+
+// Do rewrite *gomock.Call.Do
+func (c_2 *MockItemRepositoryDeleteCall) Do(f func(context.Context, int, int) error) *MockItemRepositoryDeleteCall {
+	c_2.Call = c_2.Call.Do(f)
+	return c_2
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c_2 *MockItemRepositoryDeleteCall) DoAndReturn(f func(context.Context, int, int) error) *MockItemRepositoryDeleteCall {
+	c_2.Call = c_2.Call.DoAndReturn(f)
+	return c_2
+}
+
+// Find mocks base method.
+func (m *MockItemRepository) Find(c context.Context, input *repository.FindItemInput) (*repository.FindItemOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Find", c, input)
+	ret0, _ := ret[0].(*repository.FindItemOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Find indicates an expected call of Find.
+func (mr *MockItemRepositoryMockRecorder) Find(c, input any) *MockItemRepositoryFindCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockItemRepository)(nil).Find), c, input)
+	return &MockItemRepositoryFindCall{Call: call}
+}
+
+// MockItemRepositoryFindCall wrap *gomock.Call
+type MockItemRepositoryFindCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c_2 *MockItemRepositoryFindCall) Return(arg0 *repository.FindItemOutput, arg1 error) *MockItemRepositoryFindCall {
+	c_2.Call = c_2.Call.Return(arg0, arg1)
+	return c_2
+}
+
+// Do rewrite *gomock.Call.Do
+func (c_2 *MockItemRepositoryFindCall) Do(f func(context.Context, *repository.FindItemInput) (*repository.FindItemOutput, error)) *MockItemRepositoryFindCall {
+	c_2.Call = c_2.Call.Do(f)
+	return c_2
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c_2 *MockItemRepositoryFindCall) DoAndReturn(f func(context.Context, *repository.FindItemInput) (*repository.FindItemOutput, error)) *MockItemRepositoryFindCall {
+	c_2.Call = c_2.Call.DoAndReturn(f)
+	return c_2
+}
+
+// Get mocks base method.
+func (m *MockItemRepository) Get(c context.Context, userID, itemID int) (*domain.Item, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Get", c, userID, itemID)
+	ret0, _ := ret[0].(*domain.Item)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Get indicates an expected call of Get.
+func (mr *MockItemRepositoryMockRecorder) Get(c, userID, itemID any) *MockItemRepositoryGetCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockItemRepository)(nil).Get), c, userID, itemID)
+	return &MockItemRepositoryGetCall{Call: call}
+}
+
+// MockItemRepositoryGetCall wrap *gomock.Call
+type MockItemRepositoryGetCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c_2 *MockItemRepositoryGetCall) Return(arg0 *domain.Item, arg1 error) *MockItemRepositoryGetCall {
+	c_2.Call = c_2.Call.Return(arg0, arg1)
+	return c_2
+}
+
+// Do rewrite *gomock.Call.Do
+func (c_2 *MockItemRepositoryGetCall) Do(f func(context.Context, int, int) (*domain.Item, error)) *MockItemRepositoryGetCall {
+	c_2.Call = c_2.Call.Do(f)
+	return c_2
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c_2 *MockItemRepositoryGetCall) DoAndReturn(f func(context.Context, int, int) (*domain.Item, error)) *MockItemRepositoryGetCall {
+	c_2.Call = c_2.Call.DoAndReturn(f)
+	return c_2
+}
+
+// Update mocks base method.
+func (m *MockItemRepository) Update(c context.Context, userID, itemID int, input *repository.UpdateItemInput) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", c, userID, itemID, input)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockItemRepositoryMockRecorder) Update(c, userID, itemID, input any) *MockItemRepositoryUpdateCall {
+	mr.mock.ctrl.T.Helper()
+	call := mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockItemRepository)(nil).Update), c, userID, itemID, input)
+	return &MockItemRepositoryUpdateCall{Call: call}
+}
+
+// MockItemRepositoryUpdateCall wrap *gomock.Call
+type MockItemRepositoryUpdateCall struct {
+	*gomock.Call
+}
+
+// Return rewrite *gomock.Call.Return
+func (c_2 *MockItemRepositoryUpdateCall) Return(arg0 error) *MockItemRepositoryUpdateCall {
+	c_2.Call = c_2.Call.Return(arg0)
+	return c_2
+}
+
+// Do rewrite *gomock.Call.Do
+func (c_2 *MockItemRepositoryUpdateCall) Do(f func(context.Context, int, int, *repository.UpdateItemInput) error) *MockItemRepositoryUpdateCall {
+	c_2.Call = c_2.Call.Do(f)
+	return c_2
+}
+
+// DoAndReturn rewrite *gomock.Call.DoAndReturn
+func (c_2 *MockItemRepositoryUpdateCall) DoAndReturn(f func(context.Context, int, int, *repository.UpdateItemInput) error) *MockItemRepositoryUpdateCall {
 	c_2.Call = c_2.Call.DoAndReturn(f)
 	return c_2
 }

@@ -25,7 +25,7 @@ func NewService(secret string, tokenBlacklistRepository repository.TokenBlacklis
 		return nil, fmt.Errorf("empty secret")
 	}
 	if valid.IsNil(tokenBlacklistRepository) {
-		return nil, repository.ErrTokenBlacklistRepository
+		return nil, repository.ErrNilTokenBlacklistRepository
 	}
 
 	return &Service{

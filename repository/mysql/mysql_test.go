@@ -56,7 +56,7 @@ func createTestDatabase(dbName string) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to get golang db")
 	}
-	if err := conn.Exec("CREATE DATABASE " + dbName).Error; err != nil {
+	if err := conn.Exec("CREATE DATABASE " + dbName + " COLLATE utf8_general_ci").Error; err != nil {
 		return errors.Wrap(err, "failed to create database")
 	}
 

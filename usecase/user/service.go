@@ -33,7 +33,7 @@ func (s *Service) Create(c context.Context, input *CreateInput) (*CreateOutput, 
 		return nil, errors.WithStack(err)
 	}
 
-	user, err := domain.NewUser(input.Name, input.PhoneNumber, input.Password, time.Now())
+	user, err := domain.NewUser(input.PhoneNumber, input.Password, time.Now())
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

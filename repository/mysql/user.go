@@ -32,14 +32,13 @@ func (r *UserRepository) Create(c context.Context, user *domain.User) error {
 
 	userModel := &User{
 		UserID:      user.ID,
-		UserName:    user.Name,
 		PhoneNumber: user.PhoneNumber,
 		Password:    user.Password,
 		CreatedAt:   user.CreatedAt,
 	}
 	if err := conn.Create(userModel).Error; err != nil {
 		if IsDuplicateEntry(err) {
-			return errors.Wrap(domain.ErrDuplicatedUser, err.Error())
+			return errors.Wrap(domain.ErrUserAlreadyExists, err.Error())
 		}
 
 		return errors.WithStack(err)
@@ -73,7 +72,6 @@ func (r *UserRepository) Get(c context.Context, userID int) (*domain.User, error
 
 	return &domain.User{
 		ID:          userModel.UserID,
-		Name:        userModel.UserName,
 		PhoneNumber: userModel.PhoneNumber,
 		Password:    userModel.Password,
 		CreatedAt:   userModel.CreatedAt,
@@ -104,7 +102,6 @@ func (r *UserRepository) GetByPhoneNumber(c context.Context, phoneNumber string)
 
 	return &domain.User{
 		ID:          userModel.UserID,
-		Name:        userModel.UserName,
 		PhoneNumber: userModel.PhoneNumber,
 		Password:    userModel.Password,
 		CreatedAt:   userModel.CreatedAt,
@@ -113,7 +110,6 @@ func (r *UserRepository) GetByPhoneNumber(c context.Context, phoneNumber string)
 
 type User struct {
 	UserID      int       `gorm:"user_id;primaryKey"`
-	UserName    string    `gorm:"user_name"`
 	PhoneNumber string    `gorm:"phone_number"`
 	Password    string    `gorm:"password"`
 	CreatedAt   time.Time `gorm:"created_at"`

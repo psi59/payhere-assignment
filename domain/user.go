@@ -13,7 +13,6 @@ import (
 
 type User struct {
 	ID          int
-	Name        string
 	PhoneNumber string
 	Password    string
 	CreatedAt   time.Time
@@ -24,7 +23,7 @@ const (
 	ErrInvalidUser ConstantError = "InvalidUser"
 )
 
-func NewUser(name, phoneNumber, password string, createdAt time.Time) (*User, error) {
+func NewUser(phoneNumber, password string, createdAt time.Time) (*User, error) {
 	if err := valid.ValidatePassword(password); err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -41,7 +40,6 @@ func NewUser(name, phoneNumber, password string, createdAt time.Time) (*User, er
 	}
 	u := &User{
 		ID:          0,
-		Name:        name,
 		PhoneNumber: phoneNumber,
 		Password:    string(hashed),
 		CreatedAt:   createdAt,

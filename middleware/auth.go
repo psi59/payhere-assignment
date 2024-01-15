@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/psi59/gopkg/ctxlog"
+
 	"github.com/pkg/errors"
 	"github.com/psi59/payhere-assignment/domain"
 	"github.com/psi59/payhere-assignment/internal/i18n"
@@ -60,6 +62,16 @@ func (a *AuthMiddleware) Auth() gin.HandlerFunc {
 			return
 		}
 
+		if _, err := a.authTokenUsecase.GetBlacklist(ctx, &authtoken.GetBlacklistInput{
+			Token: token,
+		}); err != nil {
+			if !errors.Is(err, domain.ErrTokenBlacklistNotFound) {
+				ginhelper.Error(ginCtx, errors.WithStack(err))
+				ginCtx.Abort()
+				return
+			}
+		}
+
 		userID, err := strconv.Atoi(verifyTokenOutput.Identifier)
 		if err != nil {
 			ginhelper.Error(ginCtx, errors.Wrap(err, "failed to parse userID"))
@@ -82,6 +94,7 @@ func (a *AuthMiddleware) Auth() gin.HandlerFunc {
 			return
 		}
 		ctx = context.WithValue(ctx, domain.CtxKeyUser, userGetOutput.User)
+		ctxlog.WithInt(ctx, "userID", userGetOutput.User.ID)
 		ginhelper.SetContext(ginCtx, ctx)
 
 		ginCtx.Next()

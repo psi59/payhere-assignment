@@ -22,6 +22,7 @@ paths:
         
         - 잘못된 요청의 경우, `InvalidRequest (400)` 에러를 반환합니다.
         - 중복된 `phoneNumber`로 회원가입을 요청할 경우, `UserAlreadyExists (409)` 에러를 반환합니다.
+        - 서버 에러가 발생한 경우, `InternalServerError (500)` 에러를 반환합니다.
       requestBody:
         content:
           application/json:
@@ -31,10 +32,6 @@ paths:
                 - phoneNumber
                 - password
               properties:
-                name:
-                  description: 회원명
-                  type: string
-                  example: "박상일"
                 phoneNumber:
                   $ref: "#/components/schemas/PhoneNumber"
                 password:
@@ -47,7 +44,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Response"
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 InvalidRequest:
                   $ref: "#/components/examples/InvalidRequest"
@@ -56,7 +53,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Response"
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 UserAlreadyExists:
                   $ref: "#/components/examples/UserAlreadyExists"
@@ -76,6 +73,7 @@ paths:
         - 잘못된 요청의 경우, `InvalidRequest (400)` 에러를 반환합니다.
         - 비밀번호가 틀렸을 경우, `PasswordMismatch (400)` 에러를 반환합니다.
         - 회원이 존재하지 않을 경우, `UserNotFound (404)` 에러를 반환합니다.
+        - 서버 에러가 발생한 경우, `InternalServerError (500)` 에러를 반환합니다.
       requestBody:
         content:
           application/json:
@@ -97,7 +95,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Response"
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 InvalidRequest:
                   $ref: "#/components/examples/InvalidRequest"
@@ -108,7 +106,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Response"
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 UserNotFound:
                   $ref: "#/components/examples/UserNotFound"
@@ -124,34 +122,405 @@ paths:
         로그아웃 기능을 제공합니다.
         
         만료되지 않은 토큰의 경우 `token_blacklist`에 등록합니다.
+        
+        ### Error case
+        
+        - 인증이 실패할 경우, `Unauthorized (401)` 에러를 반환합니다.
+        - 토큰이 이미 블랙리스트에 등록된 경우, `TokenBlacklistAlreadyExists (401)` 에러를 반환합니다.
+        - 유저가 존재하지 않는 경우, `UserNotFound (401)` 에러를 반환합니다.
+        - 서버 에러가 발생한 경우, `InternalServerError (500)` 에러를 반환합니다.
 
       security:
         - tokenAuth: []
       responses:
         204:
-          description: 회원 등록 성공
+          description: OK
+        401:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                Unauthorized:
+                  $ref: "#/components/examples/Unauthorized"
+                TokenBlacklistAlreadyExists:
+                  $ref: "#/components/examples/TokenBlacklistAlreadyExists"
+                UserNotFound:
+                  $ref: "#/components/examples/UserNotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+  /v1/items:
+    post:
+      security:
+        - tokenAuth: []
+      tags:
+        - item
+      summary: 아이템 생성
+      description: |
+        아이템을 생성합니다.
+        
+        ### Error case
+        
+        - 인증이 실패할 경우, `Unauthorized (401)` 에러를 반환합니다.
+        - 토큰이 이미 블랙리스트에 등록된 경우, `TokenBlacklistAlreadyExists (401)` 에러를 반환합니다.
+        - 유저가 존재하지 않는 경우, `UserNotFound (401)` 에러를 반환합니다.
+        - 잘못된 요청의 경우, `InvalidRequest (400)` 에러를 반환합니다.
+        - 중복된 아이템일 경우, `ItemAlreadyExists (409)` 에러를 반환합니다.
+        - 서버 에러가 발생한 경우, `InternalServerError (500)` 에러를 반환합니다.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: |
+                    이름
+                    
+                    아이템 이름의 경우 유저별로 유니크한 값이어야 합니다.
+                  minLength: 1
+                  maxLength: 100
+                  uniqueItems: true
+                description:
+                  type: string
+                  description: 설명
+                price:
+                  type: integer
+                  description: 가격
+                  minimum: 1
+                cost:
+                  type: integer
+                  description: 원가
+                  minimum: 1
+                category:
+                  type: string
+                  description: 카테고리
+                  minLength: 1
+                  maxLength: 100
+                barcode:
+                  type: string
+                  description: 바코드 정보
+                  minLength: 1
+                  maxLength: 100
+                size:
+                  $ref: '#/components/schemas/ItemSize'
+                expiryAt:
+                  type: string
+                  description: 유통 기한
+                  format: date-time
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    $ref: "#/components/schemas/ResponseMeta"
+                  data:
+                    $ref: "#/components/schemas/Item"
         400:
           description: Bad Request
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Response"
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
-                InvalidRequest:
+                UserNotFound:
                   $ref: "#/components/examples/InvalidRequest"
-                PasswordMismatch:
-                  $ref: "#/components/examples/PasswordMismatch"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                UserNotFound:
+                  $ref: "#/components/examples/Unauthorized"
+        409:
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                UserNotFound:
+                  $ref: "#/components/examples/ItemAlreadyExists"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+    get:
+      summary: 아이템 목록 조회
+      description: |
+        등록된 아이템 목록을 조회합니다.
+        
+        ### Error case
+        
+        - 잘못된 요청의 경우, `InvalidRequest (400)` 에러를 반환합니다.
+        - 인증이 실패할 경우, `Unauthorized (401)` 에러를 반환합니다.
+        - 토큰이 이미 블랙리스트에 등록된 경우, `TokenBlacklistAlreadyExists (401)` 에러를 반환합니다.
+        - 유저가 존재하지 않는 경우, `UserNotFound (401)` 에러를 반환합니다.
+        - 서버 에러가 발생한 경우, `InternalServerError (500)` 에러를 반환합니다.
+      security:
+        - tokenAuth: []
+      tags:
+        - item
+      parameters:
+        - name: keyword
+          in: query
+          description: 검색 키워드
+          schema:
+            type: string
+        - name: searchAfter
+          in: query
+          description: 다음 상품 조회를 위한 커서 정보
+          schema:
+            type: integer
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    $ref: "#/components/schemas/ResponseMeta"
+                  data:
+                    type: object
+                    properties:
+                      totalCount:
+                        type: integer
+                        description: 조회한 아이템 총 개수
+                      items:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Item"
+                      hasNext:
+                        type: boolean
+                        description: |
+                          다음 페이지 존재 여부
+                          
+                          다음 페이지가 존재할 경우, `true`
+                      searchAfter:
+                        type: integer
+                        description: |
+                          다음 페이지를 조회하기 위한 커서 정보
+                          
+                          다음 페이지 조회 요청 시 쿼리 파라메터에 해당 정보 전송
+        400:
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                UserNotFound:
+                  $ref: "#/components/examples/InvalidRequest"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                UserNotFound:
+                  $ref: "#/components/examples/Unauthorized"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /v1/items/{itemId}:
+    parameters:
+      - name: itemId
+        in: path
+        required: true
+        example: 1202
+        description: 아이템 아이디
+        schema:
+          type: integer
+    get:
+      security:
+        - tokenAuth: []
+      tags:
+        - item
+      summary: 아이템 상세 조회
+      description: |
+        등록된 아이템을 조회합니다.
+        
+        ### Error case
+        - 인증이 실패할 경우, `Unauthorized (401)` 에러를 반환합니다.
+        - 토큰이 이미 블랙리스트에 등록된 경우, `TokenBlacklistAlreadyExists (401)` 에러를 반환합니다.
+        - 유저가 존재하지 않는 경우, `UserNotFound (401)` 에러를 반환합니다.
+        - 아이템이 존재하지 않을 경우, `ItemNotFound (404)` 에러를 반환합니다.
+        - 서버 에러가 발생한 경우, `InternalServerError (500)` 에러를 반환합니다.
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    $ref: "#/components/schemas/ResponseMeta"
+                  data:
+                    $ref: "#/components/schemas/Item"
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                UserNotFound:
+                  $ref: "#/components/examples/Unauthorized"
         404:
           description: Not Found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Response"
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 UserNotFound:
-                  $ref: "#/components/examples/UserNotFound"
+                  $ref: "#/components/examples/ItemNotFound"
         500:
           $ref: "#/components/responses/InternalServerError"
+
+    delete:
+      security:
+        - tokenAuth: []
+      tags:
+        - item
+      summary: 아이템 삭제
+      description: | 
+        등록된 아이템을 삭제합니다.
+        
+        ### Error case
+        - 인증이 실패할 경우, `Unauthorized (401)` 에러를 반환합니다.
+        - 토큰이 이미 블랙리스트에 등록된 경우, `TokenBlacklistAlreadyExists (401)` 에러를 반환합니다.
+        - 유저가 존재하지 않는 경우, `UserNotFound (401)` 에러를 반환합니다.
+        - 아이템이 존재하지 않을 경우, `ItemNotFound (404)` 에러를 반환합니다.
+        - 서버 에러가 발생한 경우, `InternalServerError (500)` 에러를 반환합니다.
+      responses:
+        204:
+          description: OK
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                UserNotFound:
+                  $ref: "#/components/examples/Unauthorized"
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                UserNotFound:
+                  $ref: "#/components/examples/ItemNotFound"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+    put:
+      security:
+        - tokenAuth: []
+      tags:
+        - item
+      summary: 아이템 수정
+      description: |
+        아이템 수정 기능을 제공합니다.
+        
+        요청의 각 필드는 nullable한 값이며, null일 경우 해당 필드는 수정하지 않습니다.
+        
+        ### Error case
+        - 잘못된 요청일 경우, `InvalidRequest (400)` 에러를 반환합니다.
+        - 인증이 실패할 경우, `Unauthorized (401)` 에러를 반환합니다.
+        - 토큰이 이미 블랙리스트에 등록된 경우, `TokenBlacklistAlreadyExists (401)` 에러를 반환합니다.
+        - 유저가 존재하지 않는 경우, `UserNotFound (401)` 에러를 반환합니다.
+        - 아이템이 존재하지 않을 경우, `ItemNotFound (404)` 에러를 반환합니다.
+        - 아이템이 중복될 경우, `ItemAlreadyExists (409)` 에러를 반환합니다.
+        - 서버 에러가 발생한 경우, `InternalServerError (500)` 에러를 반환합니다.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  description: 아이템 이름
+                  type: string
+                  nullable: true
+                description:
+                  description: 아이템 설명
+                  type: string
+                  nullable: true
+                price:
+                  description: 아이템 가격
+                  type: integer
+                  nullable: true
+                cost:
+                  description: 아이템 원가
+                  type: integer
+                  nullable: true
+                category:
+                  description: 아이템 카테고리
+                  type: string
+                  nullable: true
+                Barcode:
+                  description: 아이템 바코드
+                  type: string
+                  nullable: true
+                size:
+                  description: 아이템 사이즈
+                  type: string
+                  enum:
+                    - small
+                    - large
+                  nullable: true
+                expiryAt:
+                  description: 아이템 유효기간
+                  type: string
+                  format: date-time
+                  nullable: true
+      responses:
+        204:
+          description: OK
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                UserNotFound:
+                  $ref: "#/components/examples/Unauthorized"
+        404:
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                UserNotFound:
+                  $ref: "#/components/examples/ItemNotFound"
+        409:
+          description: Conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                UserNotFound:
+                  $ref: "#/components/examples/ItemAlreadyExists"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
 
 components:
   securitySchemes:
@@ -168,11 +537,61 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/Response"
+            $ref: "#/components/schemas/ErrorResponse"
           examples:
             UserAlreadyExists:
               $ref: "#/components/examples/InternalServerError"
   schemas:
+    Item:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: 아이템 아이디
+          example: 1
+        name:
+          type: string
+          description: 이름
+          example: '슈크림 라떼'
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+          description: 설명
+          example: |
+            슈크림 라떼는, 달콤하고, 달콤하고, 달콤하다. 한 모금만으로도 당 충전이 가능할 정도다. 바닐라 라떼와 비슷해 보이지만 커피의 맛이 연하고, 바닐라의 풍미와 단맛을 한껏 끌어올렸다는 점에서 차이가 있다. 바닐라 라떼가 씁쓸하고 달콤한 커피를 마시는 느낌이라면, 슈크림 라떼는 커피보다는 바닐라 음료를 마시는 느낌이다.
+        price:
+          type: integer
+          description: 가격
+          example: 7000
+          minimum: 1
+        cost:
+          type: integer
+          description: 원가
+          example: 5000
+          minimum: 1
+        category:
+          type: string
+          description: 카테고리
+          example: 'coffee'
+          minLength: 1
+          maxLength: 100
+        barcode:
+          type: string
+          description: 바코드 정보
+          example: '0123456789012'
+          minLength: 1
+          maxLength: 100
+        size:
+          $ref: '#/components/schemas/ItemSize'
+        expiryAt:
+          type: string
+          description: 유통기한
+          format: date-time
+        createdAt:
+          type: string
+          description: 등록일
+          format: date-time
     PhoneNumber:
       description: |
         휴대 전화 번호
@@ -180,6 +599,8 @@ components:
         전화번호는 고유해야 하며 하이픈 없이 숫자로만 구성되어야 합니다.
       type: string
       uniqueItems: true
+      minLength: 12
+      maxLength: 13
       example: "01043218765"
       pattern: '^01\d{8,9}$'
     Password:
@@ -192,15 +613,21 @@ components:
         - 특수문자를 반드시 1자 이상 포함하여야 합니다.
           - 공백을 포함한 허용된 특수문자는 다음과 같습니다. `!@#$%&*+-_=?:;,.|(){}<> `
       type: string
-      example: Test1!
-    Response:
+      minLength: 8
+      maxLength: 72
+      example: SangIl1!
+    ItemSize:
+      type: string
+      description: 사이즈
+      enum:
+        - small
+        - large
+
+    ErrorResponse:
       type: object
       properties:
         meta:
           $ref: "#/components/schemas/ResponseMeta"
-        data:
-          type: object
-          additionalProperties: true
 
     ResponseMeta:
       type: object
@@ -208,33 +635,69 @@ components:
         code:
           type: integer
           description: 응답 상태 코드
+          example: 200
         message:
           type: string
           description: 응답 메시지
+          example: ok
 
   examples:
-    InternalServerError:
-      value:
-        meta:
-          code: 500
-          message: The server encountered an internal error. Please retry the request.
     InvalidRequest:
       value:
         meta:
           code: 400
           message: The request is not valid.
+
     PasswordMismatch:
       value:
         meta:
           code: 400
           message: Password does not match.
+
+    Unauthorized:
+      value:
+        meta:
+          code: 401
+          message: Server failed to authenticate the request.
+
+    ExpiredToken:
+      value:
+        meta:
+          code: 401
+          message: Token is expired.
+
+    TokenBlacklistAlreadyExists:
+      value:
+        meta:
+          code: 401
+          message: The specified token already exists in token blacklist.
+
     UserNotFound:
       value:
         meta:
           code: 404
           message: The specified user doesn't exist.
+
+    ItemNotFound:
+      value:
+        meta:
+          code: 404
+          message: The specified item doesn't exist.
+
     UserAlreadyExists:
       value:
         meta:
           code: 409
           message: The specified user already exists.
+
+    ItemAlreadyExists:
+      value:
+        meta:
+          code: 409
+          message: The specified item already exists.
+
+    InternalServerError:
+      value:
+        meta:
+          code: 500
+          message: The server encountered an internal error. Please retry the request.

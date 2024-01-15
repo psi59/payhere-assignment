@@ -34,7 +34,7 @@ func (r *TokenBlacklistRepository) Create(c context.Context, token *domain.AuthT
 	}
 	if err := conn.Create(&AuthToken{Token: token.Token, ExpiresAt: token.ExpiresAt}).Error; err != nil {
 		if IsDuplicateEntry(err) {
-			return errors.Wrap(domain.ErrDuplicatedTokenBlacklist, err.Error())
+			return errors.Wrap(domain.ErrTokenBlacklistAlreadyExists, err.Error())
 		}
 
 		return errors.WithStack(err)

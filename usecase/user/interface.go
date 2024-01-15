@@ -18,7 +18,6 @@ type Usecase interface {
 }
 
 type CreateInput struct {
-	Name        string
 	PhoneNumber string
 	Password    string
 }
