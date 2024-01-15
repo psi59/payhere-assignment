@@ -414,7 +414,7 @@ func TestUserHandler_SignOut(t *testing.T) {
 		httpRequest.Header.Set("Authorization", "Bearer "+token)
 		r.ServeHTTP(responseWriter, httpRequest)
 
-		assert.Equal(t, http.StatusOK, responseWriter.Code)
+		assert.Equal(t, http.StatusNoContent, responseWriter.Code)
 	})
 
 	t.Run("이미 등록된 토큰일 경우", func(t *testing.T) {

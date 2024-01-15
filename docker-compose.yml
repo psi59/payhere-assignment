@@ -22,9 +22,9 @@ services:
       context: .
       dockerfile: Dockerfile
       tags:
-        - payhere:latest
+        - payhere:${PAYHERE_VERSION:-latest}
       args:
-        - GOARCH=arm64
+        - GOARCH=${GOARCH:-amd64}
       no_cache: true
     command:
       - serve

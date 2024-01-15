@@ -1,4 +1,5 @@
 vendor/
-!config/*.reference.yaml
 config/*.yaml
+!config/*.reference.yaml
+!config/serve.docker.yaml
 cover.out
