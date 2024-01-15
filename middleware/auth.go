@@ -62,14 +62,22 @@ func (a *AuthMiddleware) Auth() gin.HandlerFunc {
 			return
 		}
 
-		if _, err := a.authTokenUsecase.GetBlacklist(ctx, &authtoken.GetBlacklistInput{
+		getTokenBlacklistOutput, err := a.authTokenUsecase.GetBlacklist(ctx, &authtoken.GetBlacklistInput{
 			Token: token,
-		}); err != nil {
+		})
+		if err != nil {
 			if !errors.Is(err, domain.ErrTokenBlacklistNotFound) {
 				ginhelper.Error(ginCtx, errors.WithStack(err))
 				ginCtx.Abort()
 				return
 			}
+		}
+
+		// 토큰이 블랙리스트에 존재한다면 인증 에러
+		if getTokenBlacklistOutput != nil {
+			ginhelper.Error(ginCtx, ginhelper.NewHTTPError(http.StatusUnauthorized, i18n.Unauthorized, errors.New("blacklisted token")))
+			ginCtx.Abort()
+			return
 		}
 
 		userID, err := strconv.Atoi(verifyTokenOutput.Identifier)
