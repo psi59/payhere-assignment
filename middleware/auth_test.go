@@ -171,6 +171,29 @@ func TestAuthMiddleware_Auth(t *testing.T) {
 		}, nil)
 		authTokenUsecase.EXPECT().GetBlacklist(gomock.Any(), &authtoken.GetBlacklistInput{
 			Token: token,
+		}).Return(nil, domain.ErrTokenBlacklistNotFound)
+
+		responseWriter := httptest.NewRecorder()
+		r.ServeHTTP(responseWriter, httpRequest)
+
+		var resp ginhelper.Response
+		err = json.NewDecoder(responseWriter.Body).Decode(&resp)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusInternalServerError, responseWriter.Code)
+		assert.Equal(t, http.StatusInternalServerError, resp.Meta.Code)
+		assert.Equal(t, i18n.T(language.English, i18n.InternalError, nil), resp.Meta.Message)
+	})
+
+	t.Run("토큰이 블랙리스트에 존재할 경우", func(t *testing.T) {
+		expiresAt := gofakeit.FutureDate()
+		authTokenUsecase.EXPECT().Verify(gomock.Any(), &authtoken.VerifyInput{
+			Token: token,
+		}).Return(&authtoken.VerifyOutput{
+			Identifier: strconv.Itoa(userDomain.ID),
+			ExpiresAt:  expiresAt,
+		}, nil)
+		authTokenUsecase.EXPECT().GetBlacklist(gomock.Any(), &authtoken.GetBlacklistInput{
+			Token: token,
 		}).Return(&authtoken.GetBlacklistOutput{
 			Token: &domain.AuthToken{
 				Token:     token,
@@ -184,9 +207,9 @@ func TestAuthMiddleware_Auth(t *testing.T) {
 		var resp ginhelper.Response
 		err = json.NewDecoder(responseWriter.Body).Decode(&resp)
 		require.NoError(t, err)
-		assert.Equal(t, http.StatusInternalServerError, responseWriter.Code)
-		assert.Equal(t, http.StatusInternalServerError, resp.Meta.Code)
-		assert.Equal(t, i18n.T(language.English, i18n.InternalError, nil), resp.Meta.Message)
+		assert.Equal(t, http.StatusUnauthorized, responseWriter.Code)
+		assert.Equal(t, http.StatusUnauthorized, resp.Meta.Code)
+		assert.Equal(t, i18n.T(language.English, i18n.Unauthorized, nil), resp.Meta.Message)
 	})
 
 	t.Run("토큰 블랙리스트 조회 실패", func(t *testing.T) {

@@ -1,0 +1,12 @@
+apiDoc: "/www/openapi.html"
+jwtSecret: "%4geX5?iOh9ei.5R9_W$"
+db:
+  host: 'mysql'
+  port: 3306
+  database: 'payhere'
+  username: 'root'
+  password: '1234'
+  verbose: false
+  max_open_conns: 10
+  max_idle_conns: 10
+  conn_max_lifetime: 100

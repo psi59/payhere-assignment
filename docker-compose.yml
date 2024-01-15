@@ -7,3 +7,30 @@ services:
       - 127.0.0.1:3306:3306
     environment:
       MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: payhere
+    command:
+      - --character-set-server=utf8
+      - --collation-server=utf8_general_ci
+    volumes:
+      - ./repository/mysql/tables.sql:/docker-entrypoint-initdb.d/tables.sql
+    restart: unless-stopped
+
+  payhere:
+    depends_on:
+      - mysql
+    build:
+      context: .
+      dockerfile: Dockerfile
+      tags:
+        - payhere:${PAYHERE_VERSION:-latest}
+      args:
+        - GOARCH=${GOARCH:-amd64}
+      no_cache: true
+    command:
+      - serve
+      - --config-path=/www/config.yaml
+    ports:
+      - 127.0.0.1:1202:1202
+    volumes:
+      - ./config/serve.docker.yaml:/www/config.yaml
+    restart: unless-stopped
