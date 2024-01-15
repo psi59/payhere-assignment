@@ -6,11 +6,7 @@
 "InvalidRequest" = "The request is not valid."
 "PasswordMismatch" = "Password does not match."
 
-# FORBIDDEN
-"ItemAccessDenied" = "The specified item access denied."
-
 # NOT FOUND
-"NotFound" = "Not Found"
 "UserNotFound" = "The specified user doesn't exist."
 "ItemNotFound" = "The specified item doesn't exist."
 

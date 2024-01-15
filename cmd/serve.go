@@ -149,9 +149,6 @@ func (s *APIServer) Start() error {
 
 func (s *APIServer) initRoutes() {
 	engine := s.engine
-	engine.GET("/healthcheck", func(c *gin.Context) {
-		c.String(http.StatusOK, "OK")
-	})
 	engine.GET("/docs", func(c *gin.Context) {
 		c.File(s.config.APIDoc)
 	})
