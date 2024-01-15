@@ -106,6 +106,9 @@ func TestAuthMiddleware_Auth(t *testing.T) {
 			Identifier: strconv.Itoa(userDomain.ID),
 			ExpiresAt:  gofakeit.FutureDate(),
 		}, nil)
+		authTokenUsecase.EXPECT().GetBlacklist(gomock.Any(), &authtoken.GetBlacklistInput{
+			Token: token,
+		}).Return(nil, domain.ErrTokenBlacklistNotFound)
 
 		userUsecase.EXPECT().Get(gomock.Any(), &user.GetInput{
 			UserID: userDomain.ID,
@@ -159,12 +162,43 @@ func TestAuthMiddleware_Auth(t *testing.T) {
 	})
 
 	t.Run("잘못된 토큰일 경우", func(t *testing.T) {
+		expiresAt := gofakeit.FutureDate()
 		authTokenUsecase.EXPECT().Verify(gomock.Any(), &authtoken.VerifyInput{
 			Token: token,
 		}).Return(&authtoken.VerifyOutput{
 			Identifier: gofakeit.UUID(),
+			ExpiresAt:  expiresAt,
+		}, nil)
+		authTokenUsecase.EXPECT().GetBlacklist(gomock.Any(), &authtoken.GetBlacklistInput{
+			Token: token,
+		}).Return(&authtoken.GetBlacklistOutput{
+			Token: &domain.AuthToken{
+				Token:     token,
+				ExpiresAt: expiresAt,
+			},
+		}, nil)
+
+		responseWriter := httptest.NewRecorder()
+		r.ServeHTTP(responseWriter, httpRequest)
+
+		var resp ginhelper.Response
+		err = json.NewDecoder(responseWriter.Body).Decode(&resp)
+		require.NoError(t, err)
+		assert.Equal(t, http.StatusInternalServerError, responseWriter.Code)
+		assert.Equal(t, http.StatusInternalServerError, resp.Meta.Code)
+		assert.Equal(t, i18n.T(language.English, i18n.InternalError, nil), resp.Meta.Message)
+	})
+
+	t.Run("토큰 블랙리스트 조회 실패", func(t *testing.T) {
+		authTokenUsecase.EXPECT().Verify(gomock.Any(), &authtoken.VerifyInput{
+			Token: token,
+		}).Return(&authtoken.VerifyOutput{
+			Identifier: strconv.Itoa(userDomain.ID),
 			ExpiresAt:  gofakeit.FutureDate(),
 		}, nil)
+		authTokenUsecase.EXPECT().GetBlacklist(gomock.Any(), &authtoken.GetBlacklistInput{
+			Token: token,
+		}).Return(nil, gofakeit.Error())
 
 		responseWriter := httptest.NewRecorder()
 		r.ServeHTTP(responseWriter, httpRequest)
@@ -184,6 +218,9 @@ func TestAuthMiddleware_Auth(t *testing.T) {
 			Identifier: strconv.Itoa(userDomain.ID),
 			ExpiresAt:  gofakeit.FutureDate(),
 		}, nil)
+		authTokenUsecase.EXPECT().GetBlacklist(gomock.Any(), &authtoken.GetBlacklistInput{
+			Token: token,
+		}).Return(nil, domain.ErrTokenBlacklistNotFound)
 
 		userUsecase.EXPECT().Get(gomock.Any(), &user.GetInput{
 			UserID: userDomain.ID,
@@ -207,6 +244,9 @@ func TestAuthMiddleware_Auth(t *testing.T) {
 			Identifier: strconv.Itoa(userDomain.ID),
 			ExpiresAt:  gofakeit.FutureDate(),
 		}, nil)
+		authTokenUsecase.EXPECT().GetBlacklist(gomock.Any(), &authtoken.GetBlacklistInput{
+			Token: token,
+		}).Return(nil, domain.ErrTokenBlacklistNotFound)
 
 		userUsecase.EXPECT().Get(gomock.Any(), &user.GetInput{
 			UserID: userDomain.ID,

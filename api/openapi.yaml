@@ -122,30 +122,30 @@ paths:
         로그아웃 기능을 제공합니다.
         
         만료되지 않은 토큰의 경우 `token_blacklist`에 등록합니다.
+        
+        ### Error case
+        
+        - 인증이 실패할 경우, `Unauthorized (401)` 에러를 반환합니다.
+        - 토큰이 이미 블랙리스트에 등록된 경우, `TokenBlacklistAlreadyExists (401)` 에러를 반환합니다.
+        - 유저가 존재하지 않는 경우, `UserNotFound (401)` 에러를 반환합니다.
+        - 서버 에러가 발생한 경우, `InternalServerError (500)` 에러를 반환합니다.
 
       security:
         - tokenAuth: []
       responses:
         204:
-          description: 회원 등록 성공
-        400:
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-              examples:
-                InvalidRequest:
-                  $ref: "#/components/examples/InvalidRequest"
-                PasswordMismatch:
-                  $ref: "#/components/examples/PasswordMismatch"
-        404:
+          description: OK
+        401:
           description: Not Found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
               examples:
+                Unauthorized:
+                  $ref: "#/components/examples/Unauthorized"
+                TokenBlacklistAlreadyExists:
+                  $ref: "#/components/examples/TokenBlacklistAlreadyExists"
                 UserNotFound:
                   $ref: "#/components/examples/UserNotFound"
         500:
@@ -163,6 +163,8 @@ paths:
         ### Error case
         
         - 인증이 실패할 경우, `Unauthorized (401)` 에러를 반환합니다.
+        - 토큰이 이미 블랙리스트에 등록된 경우, `TokenBlacklistAlreadyExists (401)` 에러를 반환합니다.
+        - 유저가 존재하지 않는 경우, `UserNotFound (401)` 에러를 반환합니다.
         - 잘못된 요청의 경우, `InvalidRequest (400)` 에러를 반환합니다.
         - 중복된 아이템일 경우, `ItemAlreadyExists (409)` 에러를 반환합니다.
         - 서버 에러가 발생한 경우, `InternalServerError (500)` 에러를 반환합니다.
@@ -258,6 +260,8 @@ paths:
         
         - 잘못된 요청의 경우, `InvalidRequest (400)` 에러를 반환합니다.
         - 인증이 실패할 경우, `Unauthorized (401)` 에러를 반환합니다.
+        - 토큰이 이미 블랙리스트에 등록된 경우, `TokenBlacklistAlreadyExists (401)` 에러를 반환합니다.
+        - 유저가 존재하지 않는 경우, `UserNotFound (401)` 에러를 반환합니다.
         - 서버 에러가 발생한 경우, `InternalServerError (500)` 에러를 반환합니다.
       security:
         - tokenAuth: []
@@ -346,7 +350,9 @@ paths:
         등록된 아이템을 조회합니다.
         
         ### Error case
-        - 인증에 실패할 경우, `Unauthorized (401)` 에러를 반환합니다.
+        - 인증이 실패할 경우, `Unauthorized (401)` 에러를 반환합니다.
+        - 토큰이 이미 블랙리스트에 등록된 경우, `TokenBlacklistAlreadyExists (401)` 에러를 반환합니다.
+        - 유저가 존재하지 않는 경우, `UserNotFound (401)` 에러를 반환합니다.
         - 아이템이 존재하지 않을 경우, `ItemNotFound (404)` 에러를 반환합니다.
         - 서버 에러가 발생한 경우, `InternalServerError (500)` 에러를 반환합니다.
       responses:
@@ -392,7 +398,9 @@ paths:
         등록된 아이템을 삭제합니다.
         
         ### Error case
-        - 인증에 실패할 경우, `Unauthorized (401)` 에러를 반환합니다.
+        - 인증이 실패할 경우, `Unauthorized (401)` 에러를 반환합니다.
+        - 토큰이 이미 블랙리스트에 등록된 경우, `TokenBlacklistAlreadyExists (401)` 에러를 반환합니다.
+        - 유저가 존재하지 않는 경우, `UserNotFound (401)` 에러를 반환합니다.
         - 아이템이 존재하지 않을 경우, `ItemNotFound (404)` 에러를 반환합니다.
         - 서버 에러가 발생한 경우, `InternalServerError (500)` 에러를 반환합니다.
       responses:
@@ -432,7 +440,9 @@ paths:
         
         ### Error case
         - 잘못된 요청일 경우, `InvalidRequest (400)` 에러를 반환합니다.
-        - 인증에 실패할 경우, `Unauthorized (401)` 에러를 반환합니다.
+        - 인증이 실패할 경우, `Unauthorized (401)` 에러를 반환합니다.
+        - 토큰이 이미 블랙리스트에 등록된 경우, `TokenBlacklistAlreadyExists (401)` 에러를 반환합니다.
+        - 유저가 존재하지 않는 경우, `UserNotFound (401)` 에러를 반환합니다.
         - 아이템이 존재하지 않을 경우, `ItemNotFound (404)` 에러를 반환합니다.
         - 아이템이 중복될 경우, `ItemAlreadyExists (409)` 에러를 반환합니다.
         - 서버 에러가 발생한 경우, `InternalServerError (500)` 에러를 반환합니다.
@@ -649,6 +659,18 @@ components:
         meta:
           code: 401
           message: Server failed to authenticate the request.
+
+    ExpiredToken:
+      value:
+        meta:
+          code: 401
+          message: Token is expired.
+
+    TokenBlacklistAlreadyExists:
+      value:
+        meta:
+          code: 401
+          message: The specified token already exists in token blacklist.
 
     UserNotFound:
       value:

@@ -62,6 +62,16 @@ func (a *AuthMiddleware) Auth() gin.HandlerFunc {
 			return
 		}
 
+		if _, err := a.authTokenUsecase.GetBlacklist(ctx, &authtoken.GetBlacklistInput{
+			Token: token,
+		}); err != nil {
+			if !errors.Is(err, domain.ErrTokenBlacklistNotFound) {
+				ginhelper.Error(ginCtx, errors.WithStack(err))
+				ginCtx.Abort()
+				return
+			}
+		}
+
 		userID, err := strconv.Atoi(verifyTokenOutput.Identifier)
 		if err != nil {
 			ginhelper.Error(ginCtx, errors.Wrap(err, "failed to parse userID"))

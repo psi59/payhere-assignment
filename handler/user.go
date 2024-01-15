@@ -120,7 +120,7 @@ func (h *UserHandler) SignOut(ginCtx *gin.Context) {
 		return
 	}
 
-	ginhelper.Success(ginCtx, nil)
+	ginCtx.Status(http.StatusNoContent)
 	return
 }
 
